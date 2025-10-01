@@ -575,8 +575,8 @@ function drawKeypad(scaleRatio) {
         rect(-buttonSize/2, -buttonSize/2, buttonSize, buttonSize * 0.3, 6 * scaleRatio, 6 * scaleRatio, 0, 0);
       }
       
-      // Etiqueta del botón - BLANCO
-      fill(canPress ? 255 : 120);
+      // Etiqueta del botón - SIEMPRE BLANCO
+      fill(255); // Siempre blanco, sin importar si canPress
       noStroke();
       textAlign(CENTER, CENTER);
       textSize(18 * scaleRatio);
@@ -942,10 +942,10 @@ function handleTimers() {
   if (currentState === STATES.WAITING_OPTION) {
     optionTimer++;
     if (optionTimer > OPTION_TIMEOUT / 16.67) {
-      // Timeout - colgar automáticamente
+      // Timeout - reproducir sonido de error
       console.log("Timeout: No se seleccionó opción en 5 segundos");
-      changeState(STATES.BUSY);
-      playBusyTone();
+      changeState(STATES.ERROR);
+      playErrorTone();
       optionTimer = 0;
     }
   } else {
@@ -1382,6 +1382,16 @@ function updateAllVolumes() {
   if (currentState === STATES.DIAL_TONE) {
     dialToneOsc.amp(0.1 * masterVolume);
   }
+  
+  // Actualizar volumen del audio actual si está reproduciéndose
+  if (currentAudio && currentAudio.isPlaying && currentAudio.isPlaying()) {
+    currentAudio.setVolume(masterVolume);
+  }
+  
+  // Actualizar volumen de sonidos del sistema
+  if (pickupSound) pickupSound.setVolume(masterVolume);
+  if (hangupSound) hangupSound.setVolume(masterVolume);
+  if (errorCallSound) errorCallSound.setVolume(masterVolume);
 }
 
 function hangUp() {

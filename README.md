@@ -35,15 +35,21 @@ Proyecto de **Taller 6 para la Experiencia de Usuario en Museos**
 - **Directorio visual** con 4 personajes activos
 - **Imágenes de persona** con inmersión
 - **Diseño responsive** adaptable a tablets y móviles(en fase de mejora)
+- **Control de volumen visual** con slider interactivo
+- **Indicadores de estado** en tiempo real y consola (estado actual, instrucciones, timers)
 
 ### 🔊 Sistema de Audio
-- **Tonos DTMF realistas** generados con osciladores p5.sound
-- **Sonidos del sistema**: pickup, hangup, ringing, error (archivos MP3)
-- **4 personajes completos** con 5 audios cada uno:
-  - 1 introducción
-  - 1 menú de opciones (loop 2x)
-  - 3 temas narrativos (16-45 segundos)
-- **Control de volumen** integrado en la interfaz
+- **Tonos DTMF realistas** generados con osciladores p5.sound (feedback al presionar teclas)
+- **Sonidos del sistema** (archivos MP3 reales):
+  - `pickup_phone.mp3`: Al levantar el headset (500ms delay antes de dial tone)
+  - `hangup_phone.mp3`: Al colgar el headset
+  - `error_call_phone.mp3`: Loop continuo en números incorrectos o timeout
+- **4 personajes completos** con narrativas auténticas (5 audios cada uno):
+  - 1 introducción personalizada
+  - 1 menú de opciones (se reproduce 2 veces con pausa de 3s)
+  - 3 temas narrativos expandidos (16-45 segundos cada uno)
+- **Control de volumen unificado** que afecta todos los audios (MP3 + osciladores) en tiempo real
+- **Callbacks inteligentes** que mantienen el flujo conversacional y previenen errores de estado
 
 ### 🎭 Personajes Implementados
 1. **Mujer Anónima** - Época Colonial (Tel: 1234)
@@ -55,9 +61,11 @@ Proyecto de **Taller 6 para la Experiencia de Usuario en Museos**
 ### 🔄 Flujo de Interacción
 ```
 Levantar headset → Escuchar tono de marcado → Marcar 4 dígitos 
-→ Tono de llamada → Introducción del personaje → Menú de 3 opciones
-→ Seleccionar tema (1/2/3) → Escuchar narrativa → Volver a opciones
-→ Colgar cuando termine
+→ Tono de llamada (ringing) → Introducción del personaje → Menú de 3 opciones (loop 2x)
+→ Seleccionar tema (1/2/3) durante opciones o en timeout de 5s 
+→ Escuchar narrativa → Pausa 3s → Volver a opciones (loop)
+→ Si no eliges opción en 5s: Tono de error continuo (debes colgar manualmente)
+→ Colgar arrastrando headset al teléfono
 ```
 
 ---
@@ -130,16 +138,24 @@ Taller_6_ProyectoTelefonoMuseo/
 ## 🎮 Instrucciones de Uso
 
 ### En Desktop
-1. **Click** en el canvas para activar audio (política de navegadores)
-2. **Arrastra** el headset hacia la oreja de la persona
-3. **Click** en los botones del teclado para marcar
-4. **Arrastra** el headset de vuelta al teléfono para colgar
+1. **Click** en cualquier parte para activar audio (requerido por navegadores)
+2. **Arrastra** el headset hacia la oreja de la persona (se escala dinámicamente)
+3. **Click** en los botones del teclado para marcar (números siempre visibles en blanco)
+4. **Durante la llamada**: Puedes presionar 1, 2 o 3 en cualquier momento para seleccionar opciones
+5. **Ajusta el volumen** con el slider en la parte inferior derecha
+6. **Para colgar**: Arrastra el headset de vuelta al teléfono (cerca del origen)
 
 ### En Móvil/Tablet
-1. **Tap** en el canvas para activar audio
-2. **Tap** en el headset para levantarlo
+1. **Tap** en la pantalla para activar audio (aparecerá mensaje de activación)
+2. **Tap y arrastra** el headset hacia arriba/derecha
 3. **Tap** en los números para marcar
-4. **Tap** en el headset y arrástralo al teléfono para colgar
+4. **Tap** en 1, 2 o 3 durante las opciones
+5. **Para colgar**: Arrastra el headset de vuelta hacia el teléfono
+
+### ⚠️ Notas Importantes
+- **Timeout de opciones**: Si no seleccionas una opción en 5 segundos, sonará el tono de error continuo. Debes colgar manualmente.
+- **Estado de error**: No hay auto-hangup en error. El usuario debe colgar manualmente arrastrando el headset.
+- **Volumen**: El slider controla todos los audios (MP3 y tonos sintéticos) en tiempo real.
 
 ---
 
@@ -231,9 +247,10 @@ let scale = min(width/1200, height/800);
 ### Patrón de Audio
 - Tonos sintéticos: `p5.Oscillator` (DTMF, dial tone)
 - Efectos: Archivos MP3 con callbacks `.onended()`
-- Control de volumen: Variable global `masterVolume` (0-1)
+- Control de volumen: Variable global `masterVolume` (0-1) que afecta todos los audios
+- Validaciones: Todas las funciones de audio verifican estado y personaje válido antes de reproducir
+- No auto-hangup en ERROR: El usuario debe colgar manualmente
 
----
 
 ## 📄 Licencia
 
