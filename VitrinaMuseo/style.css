@@ -1,0 +1,20 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  background-color: #14141a;
+  font-family: 'Arial', sans-serif;
+}
+
+canvas {
+  display: block;
+}
+
+/* Ocultar botones por defecto de p5 */
+button {
+  display: none !important;
+}

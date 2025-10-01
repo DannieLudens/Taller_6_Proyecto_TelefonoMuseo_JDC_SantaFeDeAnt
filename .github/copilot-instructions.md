@@ -105,6 +105,9 @@ All mouse events have mirror `touch*()` functions (lines 1082-1096) that call mo
 - Loaded from CDN in `index.html`, no build step required
 
 ## File Organization
+**Main Repository**: `Taller_6_ProyectoVoces/` contains two independent projects:
+
+### TelefonoMuseo/ (Primary Project)
 - `sketch.js`: Entire application logic (~1400 lines, monolithic)
 - `index.html`: Minimal HTML shell, CDN script tags only
 - `style.css`: Basic resets (hide p5 default buttons, set background)
@@ -115,11 +118,17 @@ All mouse events have mirror `touch*()` functions (lines 1082-1096) that call mo
   - `persona_rostro.png`: Face image with rounded mask (80% x, 35% y)
   - `persona_mano.png`: Hand overlay (same position as rostro)
 
+### VitrinaMuseo/ (Secondary Project)
+- Separate interactive display case system with automatic proximity detection
+- Similar p5.js structure but different interaction model (passive vs active)
+
 ## Running & Testing
-1. **Local Server**: Use Live Server extension or `python -m http.server` (required for audio loading)
-2. **Test Sequence**: Lift handset → Dial `1234` → Wait for intro → Press 1/2/3 during options → Verify loop back
-3. **Audio Context**: Click anywhere first to satisfy browser autoplay policies (`startAudioContext()`)
-4. **Console Logging**: All state changes and audio events log to console for debugging
+1. **Navigate to Project**: `cd TelefonoMuseo/` (for phone) or `cd VitrinaMuseo/` (for display case)
+2. **Local Server**: Use Live Server extension or `python -m http.server 8000` (required for audio loading)
+3. **Test Sequence (Phone)**: Lift handset → Dial `1234` → Wait for intro → Press 1/2/3 during options → Verify loop back
+4. **Test Sequence (Vitrina)**: Mouse over display case → Wait 5s → Observe automatic narrative sequence
+5. **Audio Context**: Click anywhere first to satisfy browser autoplay policies (`startAudioContext()`)
+6. **Console Logging**: All state changes and audio events log to console for debugging
 
 ## Known Patterns to Preserve
 - **State-guarded input**: Keypad `canPress` logic (lines 444-452) differs by state - maintain these conditionals

@@ -85,8 +85,9 @@ Levantar headset → Escuchar tono de marcado → Marcar 4 dígitos
 # 1. Clonar el repositorio
 git clone https://github.com/DannieLudens/Taller_6_Proyecto_TelefonoMuseo_JDC_SantaFeDeAnt.git
 
-# 2. Abrir en VS Code
-code Taller_6_Proyecto_TelefonoMuseo_JDC_SantaFeDeAnt
+# 2. Abrir carpeta del teléfono en VS Code
+cd Taller_6_Proyecto_TelefonoMuseo_JDC_SantaFeDeAnt/TelefonoMuseo
+code .
 
 # 3. Instalar extensión "Live Server" de Ritwick Dey
 # 4. Click derecho en index.html → "Open with Live Server"
@@ -94,7 +95,8 @@ code Taller_6_Proyecto_TelefonoMuseo_JDC_SantaFeDeAnt
 
 ### Opción 2: Python HTTP Server
 ```bash
-# Desde la carpeta del proyecto:
+# Desde la carpeta TelefonoMuseo:
+cd TelefonoMuseo
 python -m http.server 8000
 
 # Abrir en navegador: http://localhost:8000
@@ -110,13 +112,11 @@ npx http-server -p 8000
 ## 📁 Estructura del Proyecto
 
 ```
-Taller_6_ProyectoTelefonoMuseo/
+TelefonoMuseo/
 ├── index.html                    # Punto de entrada HTML
 ├── sketch.js                     # Lógica principal (~1400 líneas)
 ├── style.css                     # Estilos CSS básicos
 ├── README.md                     # Este archivo
-├── .github/
-│   └── copilot-instructions.md   # Instrucciones para AI coding agents
 └── assets/
     ├── images/
     │   ├── persona_rostro.png    # Rostro con máscara redondeada
@@ -354,7 +354,7 @@ Museo Juan del Corral, Santa Fe de Antioquia
 
 ## 📧 Contacto
 
-**Repositorio:** [github.com/DannieLudens/Taller_6_Proyecto_TelefonoMuseo_JDC_SantaFeDeAnt](https://github.com/DannieLudens/Taller_6_Proyecto_TelefonoMuseo_JDC_SantaFeDeAnt)  
+**Repositorio:** [github.com/DannieLudens/Taller_6_Proyecto_TelefonoMuseo_JDC_SantaFeDeAnt](https://github.com/DannieLudens/Taller_6_Proyecto_TelefonoMuseo_JDC_SantaFeDeAnt) - Carpeta: `/TelefonoMuseo/`  
 **Issues:** [Reportar un problema](../../issues)  
 
 ---
