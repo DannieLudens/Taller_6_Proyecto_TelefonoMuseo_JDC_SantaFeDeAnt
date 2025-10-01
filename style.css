@@ -1,0 +1,17 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: 'Arial', sans-serif;
+  background-color: #f0ebe0;
+}
+
+canvas {
+  display: block;
+  cursor: default;
+}
+
+/* Ocultar elementos de p5.js por defecto si los hay */
+button {
+  display: none;
+}
