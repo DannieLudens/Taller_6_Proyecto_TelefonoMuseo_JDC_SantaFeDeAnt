@@ -2,6 +2,10 @@
 // SIMULADOR DE TELÉFONO - MUSEO JUAN DEL CORRAL
 // ============================================
 
+// SISTEMA DE SKINS DEL TELÉFONO
+let phoneStyle = 'buttons'; // 'buttons' o 'rotary'
+let styleToggleBounds = null; // Bounds del botón toggle
+
 // Estados del teléfono
 const STATES = {
   IDLE: 'idle',
@@ -22,6 +26,14 @@ let currentPersonaje = null;
 let currentPersonajeIndex = -1;
 let selectedOption = 0;
 let opcionesPlayCount = 0; // Contador de veces que se reprodujo el audio de opciones
+
+// Variables para teléfono rotatorio
+let rotaryAngle = 0; // Ángulo actual del disco
+let targetRotaryAngle = 0; // Ángulo objetivo
+let isDraggingDial = false; // Si está arrastrando el disco
+let dialStartAngle = 0; // Ángulo donde empezó el arrastre
+let currentDialNumber = -1; // Número actual siendo marcado
+let isReturning = false; // Si el disco está volviendo a la posición inicial
 
 // Configuración de personajes
 const personajes = [
@@ -261,7 +273,7 @@ function draw() {
   drawDirectorio(scaleRatio);
   
   // === CAPA 2: Teléfono con headset (medio) ===
-  // Dibujar teléfono
+  // Dibujar teléfono (según el estilo seleccionado)
   drawTelefono(scaleRatio);
   
   // === CAPA 3: Mano de la persona (frente) ===
@@ -274,6 +286,9 @@ function draw() {
     image(personaMano, 0, 0, personaMano.width * imgScale, personaMano.height * imgScale);
     pop();
   }
+  
+  // Dibujar toggle de estilo de teléfono
+  drawStyleToggle(scaleRatio);
   
   // Dibujar control de volumen
   drawVolumeControl(scaleRatio);
@@ -429,6 +444,15 @@ function drawDirectorio(scaleRatio) {
 }
 
 function drawTelefono(scaleRatio) {
+  // Dispatcher: llamar a la función correcta según el estilo
+  if (phoneStyle === 'buttons') {
+    drawTelefonoButtons(scaleRatio);
+  } else if (phoneStyle === 'rotary') {
+    drawTelefonoRotary(scaleRatio);
+  }
+}
+
+function drawTelefonoButtons(scaleRatio) {
   push();
   translate(width * 0.5, height * 0.42); // Subido de 0.5 a 0.42
   
@@ -535,6 +559,7 @@ function drawKeypad(scaleRatio) {
         col: col
       });
       
+      // Dibujar el botón visualmente
       let isHovered = dist(mouseX, mouseY, x + width * 0.5, y + height * 0.42) < buttonSize / 2;
       
       // Determinar si el botón puede ser presionado
@@ -586,6 +611,234 @@ function drawKeypad(scaleRatio) {
       pop();
     }
   }
+}
+
+// ============================================
+// TELÉFONO ROTATORIO
+// ============================================
+
+function drawTelefonoRotary(scaleRatio) {
+  push();
+  translate(width * 0.5, height * 0.42);
+  
+  // Base del teléfono rotatorio - más cuadrada
+  fill(245, 240, 220);
+  stroke(180, 170, 150);
+  strokeWeight(3 * scaleRatio);
+  
+  // Base cuadrada redondeada
+  let baseWidth = 280 * scaleRatio;
+  let baseHeight = 340 * scaleRatio;
+  rect(-baseWidth/2, -30 * scaleRatio, baseWidth, baseHeight, 15 * scaleRatio);
+  
+  // Sombra
+  fill(220, 210, 190);
+  noStroke();
+  rect(-baseWidth/2 + 5 * scaleRatio, 310 * scaleRatio, baseWidth - 10 * scaleRatio, 10 * scaleRatio, 5 * scaleRatio);
+  
+  // Disco rotatorio
+  drawRotaryDial(scaleRatio);
+  
+  // Display LCD arriba
+  push();
+  translate(0, 30 * scaleRatio);
+  fill(120, 180, 120);
+  stroke(80, 120, 80);
+  strokeWeight(2);
+  rect(-100 * scaleRatio, 0, 200 * scaleRatio, 35 * scaleRatio, 4);
+  
+  // Texto del número marcado
+  fill(20);
+  noStroke();
+  textAlign(CENTER, CENTER);
+  textSize(18 * scaleRatio);
+  textStyle(BOLD);
+  text(dialedNumber || "____", 0, 17 * scaleRatio);
+  pop();
+  
+  // Dibujar headset y horquilla (mismo que botones)
+  drawHeadset(scaleRatio);
+  
+  pop();
+}
+
+function drawRotaryDial(scaleRatio) {
+  let centerX = 0;
+  let centerY = 160 * scaleRatio;
+  let outerRadius = 110 * scaleRatio;
+  let innerRadius = 35 * scaleRatio;
+  
+  // Animar rotación
+  rotaryAngle = lerp(rotaryAngle, targetRotaryAngle, 0.15);
+  
+  push();
+  translate(centerX, centerY);
+  rotate(rotaryAngle);
+  
+  // Disco principal
+  fill(245, 240, 220);
+  stroke(180, 170, 150);
+  strokeWeight(3 * scaleRatio);
+  circle(0, 0, outerRadius * 2);
+  
+  // Círculo interior (donde va el dedo)
+  fill(235, 225, 205);
+  circle(0, 0, innerRadius * 2);
+  
+  // Dibujar números (0-9) en círculo
+  const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+  for (let i = 0; i < numbers.length; i++) {
+    let angle = map(i, 0, 10, -PI * 0.25, PI * 1.75); // Desde arriba derecha
+    let numRadius = (outerRadius + innerRadius) / 2;
+    let x = cos(angle) * numRadius;
+    let y = sin(angle) * numRadius;
+    
+    push();
+    translate(x, y);
+    
+    // Agujero para el dedo
+    fill(60, 55, 50);
+    stroke(40, 35, 30);
+    strokeWeight(2 * scaleRatio);
+    circle(0, 0, 25 * scaleRatio);
+    
+    // Número
+    fill(255);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    textSize(16 * scaleRatio);
+    textStyle(BOLD);
+    text(numbers[i], 0, 0);
+    pop();
+  }
+  
+  // Tope (finger stop) - una pequeña barra metálica
+  push();
+  rotate(PI * 1.85);
+  fill(100, 100, 100);
+  noStroke();
+  rect(-5 * scaleRatio, outerRadius - 10 * scaleRatio, 10 * scaleRatio, 25 * scaleRatio, 3 * scaleRatio);
+  pop();
+  
+  pop();
+  
+  // Guardar posición del disco para detección de arrastre
+  rotaryDialBounds = {
+    x: width * 0.5 + centerX,
+    y: height * 0.42 + centerY,
+    outerRadius: outerRadius,
+    innerRadius: innerRadius
+  };
+}
+
+function drawStyleToggle(scaleRatio) {
+  push();
+  translate(width * 0.15, height * 0.08);
+  
+  let toggleWidth = 180 * scaleRatio;
+  let toggleHeight = 50 * scaleRatio;
+  let buttonWidth = toggleWidth / 2 - 5 * scaleRatio;
+  
+  // Fondo del toggle
+  fill(255, 255, 255, 200);
+  stroke(100);
+  strokeWeight(2);
+  rect(-toggleWidth/2, -toggleHeight/2, toggleWidth, toggleHeight, 10);
+  
+  // Botón izquierdo (Botones)
+  if (phoneStyle === 'buttons') {
+    fill(0, 150, 255); // Activo - azul
+  } else {
+    fill(200); // Inactivo - gris
+  }
+  stroke(100);
+  strokeWeight(2);
+  rect(-toggleWidth/2 + 5 * scaleRatio, -toggleHeight/2 + 5 * scaleRatio, buttonWidth, toggleHeight - 10 * scaleRatio, 8);
+  
+  // Texto "Botones"
+  fill(phoneStyle === 'buttons' ? 255 : 60);
+  noStroke();
+  textAlign(CENTER, CENTER);
+  textSize(12 * scaleRatio);
+  textStyle(BOLD);
+  text("🔢 Botones", -toggleWidth/4, 0);
+  
+  // Botón derecho (Rotatorio)
+  if (phoneStyle === 'rotary') {
+    fill(0, 150, 255); // Activo - azul
+  } else {
+    fill(200); // Inactivo - gris
+  }
+  stroke(100);
+  strokeWeight(2);
+  rect(5 * scaleRatio, -toggleHeight/2 + 5 * scaleRatio, buttonWidth, toggleHeight - 10 * scaleRatio, 8);
+  
+  // Texto "Rotatorio"
+  fill(phoneStyle === 'rotary' ? 255 : 60);
+  noStroke();
+  textAlign(CENTER, CENTER);
+  textSize(12 * scaleRatio);
+  textStyle(BOLD);
+  text("📞 Rotatorio", toggleWidth/4, 0);
+  
+  pop();
+  
+  // Guardar bounds para detección de click
+  styleToggleBounds = {
+    leftX: width * 0.15 - toggleWidth/2,
+    rightX: width * 0.15 + toggleWidth/2,
+    topY: height * 0.08 - toggleHeight/2,
+    bottomY: height * 0.08 + toggleHeight/2,
+    midX: width * 0.15
+  };
+}
+
+function handleRotaryClick(mx, my) {
+  if (!rotaryDialBounds || !headsetLifted) return null;
+  
+  let dx = mx - rotaryDialBounds.x;
+  let dy = my - rotaryDialBounds.y;
+  let distance = sqrt(dx * dx + dy * dy);
+  
+  // Click dentro del área de números (entre innerRadius y outerRadius)
+  if (distance > rotaryDialBounds.innerRadius && distance < rotaryDialBounds.outerRadius) {
+    // Calcular qué número está en esa posición
+    let angle = atan2(dy, dx);
+    // Normalizar ángulo
+    if (angle < 0) angle += TWO_PI;
+    
+    // Mapear ángulo a número
+    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+    let startAngle = -PI * 0.25;
+    let endAngle = PI * 1.75;
+    
+    for (let i = 0; i < numbers.length; i++) {
+      let numAngle = map(i, 0, 10, startAngle, endAngle);
+      if (numAngle < 0) numAngle += TWO_PI;
+      
+      // Verificar si el click está cerca de este número
+      let angleDiff = abs(angle - numAngle);
+      if (angleDiff < 0.3) { // ~17 grados de tolerancia
+        return numbers[i];
+      }
+    }
+  }
+  
+  return null;
+}
+
+function handleRotaryDrag() {
+  if (!isDraggingDial || !rotaryDialBounds) return;
+  
+  let dx = mouseX - rotaryDialBounds.x;
+  let dy = mouseY - rotaryDialBounds.y;
+  let currentAngle = atan2(dy, dx);
+  
+  // Actualizar ángulo objetivo
+  targetRotaryAngle = currentAngle - dialStartAngle;
+  
+  // Limitar rotación (solo puede rotar en sentido horario hasta el tope)
+  targetRotaryAngle = constrain(targetRotaryAngle, 0, PI * 0.5);
 }
 
 function drawHeadset(scaleRatio) {
@@ -958,6 +1211,21 @@ function mousePressed() {
   
   let scaleRatio = min(width / 1200, height / 800);
   
+  // Click en toggle de estilo de teléfono
+  if (styleToggleBounds) {
+    if (mouseX > styleToggleBounds.leftX && mouseX < styleToggleBounds.rightX &&
+        mouseY > styleToggleBounds.topY && mouseY < styleToggleBounds.bottomY) {
+      // Determinar qué lado se clickeó
+      if (mouseX < styleToggleBounds.midX) {
+        phoneStyle = 'buttons';
+      } else {
+        phoneStyle = 'rotary';
+      }
+      console.log(`Estilo cambiado a: ${phoneStyle}`);
+      return;
+    }
+  }
+  
   // Click en slider de volumen
   if (this.volumeSliderBounds) {
     let bounds = this.volumeSliderBounds;
@@ -984,8 +1252,21 @@ function mousePressed() {
     return;
   }
   
-  // Click en botones del teclado
-  if (headsetLifted) {
+  // Para teléfono rotatorio: detectar click en disco
+  if (phoneStyle === 'rotary' && headsetLifted) {
+    let clickedNumber = handleRotaryClick(mouseX, mouseY);
+    if (clickedNumber !== null) {
+      isDraggingDial = true;
+      currentDialNumber = clickedNumber;
+      let dx = mouseX - rotaryDialBounds.x;
+      let dy = mouseY - rotaryDialBounds.y;
+      dialStartAngle = atan2(dy, dx) - rotaryAngle;
+      return;
+    }
+  }
+  
+  // Click en botones del teclado (solo para phoneStyle === 'buttons')
+  if (headsetLifted && phoneStyle === 'buttons') {
     // Marcando número inicial
     if (currentState === STATES.DIAL_TONE || currentState === STATES.DIALING) {
       for (let btn of keypadButtons) {
@@ -1013,6 +1294,12 @@ function mousePressed() {
 }
 
 function mouseDragged() {
+  // Arrastrar disco rotatorio
+  if (isDraggingDial) {
+    handleRotaryDrag();
+    return;
+  }
+  
   if (isDraggingHeadset && headsetLifted) {
     let scaleRatio = min(width / 1200, height / 800);
     let baseX = width * 0.5;
@@ -1042,6 +1329,28 @@ function mouseDragged() {
 
 function mouseReleased() {
   isDraggingHeadset = false;
+  
+  // Soltar disco rotatorio - animar regreso y marcar número
+  if (isDraggingDial) {
+    isDraggingDial = false;
+    isReturning = true;
+    
+    // Animar regreso a posición inicial
+    targetRotaryAngle = 0;
+    
+    // Después de un delay, registrar el número
+    if (currentDialNumber !== null) {
+      // Esperar a que termine la animación de regreso
+      setTimeout(() => {
+        if (currentState === STATES.DIAL_TONE || currentState === STATES.DIALING) {
+          pressKey(currentDialNumber, 0, 0); // row y col no importan para rotatorio
+        }
+        currentDialNumber = null;
+        isReturning = false;
+      }, 500); // Tiempo de animación de regreso
+    }
+    return;
+  }
   
   // Si el headset está levantado pero muy lejos, colgarlo
   if (headsetLifted) {
