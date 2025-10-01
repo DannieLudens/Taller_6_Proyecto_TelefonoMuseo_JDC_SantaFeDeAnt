@@ -228,14 +228,14 @@ function draw() {
   image(woodBackground, 0, 0);
   
   // Responsive calculations
-  let scale = min(width / 1200, height / 800);
+  let scaleRatio = min(width / 1200, height / 800);
   
   // === CAPA 1: Rostro de la persona (fondo) ===
   if (personaRostro) {
     push();
     // Posicionar rostro en la parte derecha superior
     translate(width * 0.80, height * 0.35);
-    let imgScale = scale * 0.6; // Ajustar tamaño
+    let imgScale = scaleRatio * 0.6; // Ajustar tamaño
     
     // Crear máscara con bordes redondeados
     drawingContext.save();
@@ -243,7 +243,7 @@ function draw() {
     // Definir el rectángulo redondeado como región de recorte
     let maskWidth = personaRostro.width * imgScale;
     let maskHeight = personaRostro.height * imgScale;
-    let cornerRadius = 30 * scale; // Radio de las esquinas redondeadas
+    let cornerRadius = 30 * scaleRatio; // Radio de las esquinas redondeadas
     
     drawingContext.beginPath();
     drawingContext.roundRect(-maskWidth/2, -maskHeight/2, maskWidth, maskHeight, cornerRadius);
@@ -258,28 +258,28 @@ function draw() {
   }
   
   // Dibujar directorio
-  drawDirectorio(scale);
+  drawDirectorio(scaleRatio);
   
   // === CAPA 2: Teléfono con headset (medio) ===
   // Dibujar teléfono
-  drawTelefono(scale);
+  drawTelefono(scaleRatio);
   
   // === CAPA 3: Mano de la persona (frente) ===
   // Misma posición que el rostro para superponerse exactamente
   if (personaMano) {
     push();
     translate(width * 0.80, height * 0.35); // Misma posición que el rostro
-    let imgScale = scale * 0.6; // Mismo tamaño que el rostro
+    let imgScale = scaleRatio * 0.6; // Mismo tamaño que el rostro
     imageMode(CENTER);
     image(personaMano, 0, 0, personaMano.width * imgScale, personaMano.height * imgScale);
     pop();
   }
   
   // Dibujar control de volumen
-  drawVolumeControl(scale);
+  drawVolumeControl(scaleRatio);
   
   // Dibujar información de estado
-  drawEstadoInfo(scale);
+  drawEstadoInfo(scaleRatio);
   
   // Actualizar animaciones
   updateAnimations();
@@ -288,29 +288,29 @@ function draw() {
   handleTimers();
 }
 
-function drawLCDDisplay(scale) {
+function drawLCDDisplay(scaleRatio) {
   // Display debajo del teclado (posición relativa al teléfono)
   push();
-  translate(0, 250 * scale);
+  translate(0, 250 * scaleRatio);
   
   // Pantalla LCD verde
   fill(120, 180, 120);
   stroke(80, 120, 80);
   strokeWeight(2);
-  rect(-100 * scale, 0, 200 * scale, 35 * scale, 4);
+  rect(-100 * scaleRatio, 0, 200 * scaleRatio, 35 * scaleRatio, 4);
   
   // Texto del número marcado
   fill(20);
   noStroke();
   textAlign(CENTER, CENTER);
-  textSize(18 * scale);
+  textSize(18 * scaleRatio);
   textStyle(BOLD);
-  text(dialedNumber || "____", 0, 17 * scale);
+  text(dialedNumber || "____", 0, 17 * scaleRatio);
   
   pop();
 }
 
-function drawEar(scale) {
+function drawEar(scaleRatio) {
   // La oreja aparece en la parte superior derecha
   earAlpha = lerp(earAlpha, headsetLifted ? 255 : 0, 0.1);
   
@@ -322,50 +322,50 @@ function drawEar(scale) {
   // Oreja simplificada
   fill(255, 220, 190, earAlpha);
   stroke(180, 140, 100, earAlpha);
-  strokeWeight(2 * scale);
+  strokeWeight(2 * scaleRatio);
   
   // Forma de C de la oreja
   beginShape();
-  vertex(0, -40 * scale);
+  vertex(0, -40 * scaleRatio);
   bezierVertex(
-    30 * scale, -40 * scale,
-    40 * scale, -20 * scale,
-    40 * scale, 0
+    30 * scaleRatio, -40 * scaleRatio,
+    40 * scaleRatio, -20 * scaleRatio,
+    40 * scaleRatio, 0
   );
   bezierVertex(
-    40 * scale, 20 * scale,
-    30 * scale, 40 * scale,
-    0, 40 * scale
+    40 * scaleRatio, 20 * scaleRatio,
+    30 * scaleRatio, 40 * scaleRatio,
+    0, 40 * scaleRatio
   );
   bezierVertex(
-    15 * scale, 40 * scale,
-    20 * scale, 20 * scale,
-    20 * scale, 0
+    15 * scaleRatio, 40 * scaleRatio,
+    20 * scaleRatio, 20 * scaleRatio,
+    20 * scaleRatio, 0
   );
   bezierVertex(
-    20 * scale, -20 * scale,
-    15 * scale, -40 * scale,
-    0, -40 * scale
+    20 * scaleRatio, -20 * scaleRatio,
+    15 * scaleRatio, -40 * scaleRatio,
+    0, -40 * scaleRatio
   );
   endShape();
   
   // Canal auditivo
   fill(220, 180, 150, earAlpha);
   noStroke();
-  ellipse(10 * scale, 0, 15 * scale, 20 * scale);
+  ellipse(10 * scaleRatio, 0, 15 * scaleRatio, 20 * scaleRatio);
   
   // Texto indicativo
   if (earAlpha > 200) {
     fill(100, 100, 100, earAlpha);
     textAlign(CENTER, CENTER);
-    textSize(14 * scale);
-    text("Arrastra aquí", 0, 70 * scale);
+    textSize(14 * scaleRatio);
+    text("Arrastra aquí", 0, 70 * scaleRatio);
   }
   
   pop();
 }
 
-function drawDirectorio(scale) {
+function drawDirectorio(scaleRatio) {
   push();
   translate(width * 0.08, height * 0.15);
   
@@ -373,24 +373,24 @@ function drawDirectorio(scale) {
   fill(255, 250, 240);
   stroke(100);
   strokeWeight(2);
-  rect(0, 0, 260 * scale, 480 * scale, 10);
+  rect(0, 0, 260 * scaleRatio, 480 * scaleRatio, 10);
   
   // Título
   fill(80);
   noStroke();
   textAlign(LEFT, TOP);
-  textSize(22 * scale);
+  textSize(22 * scaleRatio);
   textStyle(BOLD);
-  text("DIRECTORIO", 20 * scale, 20 * scale);
+  text("DIRECTORIO", 20 * scaleRatio, 20 * scaleRatio);
   
   // Línea decorativa
   stroke(180);
   strokeWeight(2);
-  line(20 * scale, 50 * scale, 240 * scale, 50 * scale);
+  line(20 * scaleRatio, 50 * scaleRatio, 240 * scaleRatio, 50 * scaleRatio);
   
   // Lista de personajes
   textStyle(NORMAL);
-  let yPos = 70 * scale;
+  let yPos = 70 * scaleRatio;
   
   for (let i = 0; i < personajes.length; i++) {
     let p = personajes[i];
@@ -398,66 +398,66 @@ function drawDirectorio(scale) {
     // Nombre
     fill(60);
     noStroke();
-    textSize(15 * scale);
+    textSize(15 * scaleRatio);
     textStyle(BOLD);
-    text(p.nombre, 20 * scale, yPos);
+    text(p.nombre, 20 * scaleRatio, yPos);
     
     // Oficio
     fill(100);
-    textSize(13 * scale);
+    textSize(13 * scaleRatio);
     textStyle(NORMAL);
-    text(p.oficio, 20 * scale, yPos + 20 * scale);
+    text(p.oficio, 20 * scaleRatio, yPos + 20 * scaleRatio);
     
     // Teléfono con ícono
     fill(0, 100, 200);
-    textSize(18 * scale);
+    textSize(18 * scaleRatio);
     textStyle(BOLD);
-    text("☎ " + p.telefono, 20 * scale, yPos + 42 * scale);
+    text("☎ " + p.telefono, 20 * scaleRatio, yPos + 42 * scaleRatio);
     
     // Línea separadora
     if (i < personajes.length - 1) {
       stroke(200);
       strokeWeight(1);
-      line(20 * scale, yPos + 70 * scale, 240 * scale, yPos + 70 * scale);
+      line(20 * scaleRatio, yPos + 70 * scaleRatio, 240 * scaleRatio, yPos + 70 * scaleRatio);
     }
     
-    yPos += 80 * scale;
+    yPos += 80 * scaleRatio;
     textStyle(NORMAL);
   }
   
   pop();
 }
 
-function drawTelefono(scale) {
+function drawTelefono(scaleRatio) {
   push();
   translate(width * 0.5, height * 0.42); // Subido de 0.5 a 0.42
   
   // Base del teléfono - color crema (forma trapezoidal inclinada con bordes redondeados)
   fill(245, 240, 220);
   stroke(180, 170, 150);
-  strokeWeight(3 * scale);
+  strokeWeight(3 * scaleRatio);
   
   // Dibujar trapecio con bordes redondeados
-  let cornerRadius = 12 * scale;
+  let cornerRadius = 12 * scaleRatio;
   beginShape();
   // Esquina superior izquierda (redondeada)
-  vertex(-120 * scale + cornerRadius, -30 * scale);
+  vertex(-120 * scaleRatio + cornerRadius, -30 * scaleRatio);
   // Línea superior
-  vertex(120 * scale - cornerRadius, -30 * scale);
+  vertex(120 * scaleRatio - cornerRadius, -30 * scaleRatio);
   // Esquina superior derecha (redondeada)
-  quadraticVertex(120 * scale, -30 * scale, 120 * scale + 2 * scale, -30 * scale + cornerRadius);
+  quadraticVertex(120 * scaleRatio, -30 * scaleRatio, 120 * scaleRatio + 2 * scaleRatio, -30 * scaleRatio + cornerRadius);
   // Lado derecho (paralelo al panel del teclado)
-  vertex(150 * scale - 2 * scale, 330 * scale - cornerRadius);
+  vertex(150 * scaleRatio - 2 * scaleRatio, 330 * scaleRatio - cornerRadius);
   // Esquina inferior derecha (redondeada)
-  quadraticVertex(150 * scale, 330 * scale, 150 * scale - cornerRadius, 330 * scale);
+  quadraticVertex(150 * scaleRatio, 330 * scaleRatio, 150 * scaleRatio - cornerRadius, 330 * scaleRatio);
   // Línea inferior (más ancha para mantener paralelismo)
-  vertex(-150 * scale + cornerRadius, 330 * scale);
+  vertex(-150 * scaleRatio + cornerRadius, 330 * scaleRatio);
   // Esquina inferior izquierda (redondeada)
-  quadraticVertex(-150 * scale, 330 * scale, -150 * scale + 2 * scale, 330 * scale - cornerRadius);
+  quadraticVertex(-150 * scaleRatio, 330 * scaleRatio, -150 * scaleRatio + 2 * scaleRatio, 330 * scaleRatio - cornerRadius);
   // Lado izquierdo (paralelo al panel del teclado)
-  vertex(-120 * scale - 2 * scale, -30 * scale + cornerRadius);
+  vertex(-120 * scaleRatio - 2 * scaleRatio, -30 * scaleRatio + cornerRadius);
   // Esquina superior izquierda (redondeada)
-  quadraticVertex(-120 * scale, -30 * scale, -120 * scale + cornerRadius, -30 * scale);
+  quadraticVertex(-120 * scaleRatio, -30 * scaleRatio, -120 * scaleRatio + cornerRadius, -30 * scaleRatio);
   endShape(CLOSE);
   
   // Sombra inferior para dar profundidad (más grande y más arriba)
@@ -465,58 +465,58 @@ function drawTelefono(scale) {
   noStroke();
   beginShape();
   // Esquina superior izquierda (redondeada)
-  vertex(-138.6 * scale + cornerRadius, 303 * scale);
+  vertex(-138.6 * scaleRatio + cornerRadius, 303 * scaleRatio);
   // Línea superior
-  vertex(138.6 * scale - cornerRadius, 303 * scale);
+  vertex(138.6 * scaleRatio - cornerRadius, 303 * scaleRatio);
   // Esquina superior derecha (redondeada)
-  quadraticVertex(138.6 * scale, 303 * scale, 138.6 * scale + 2 * scale, 303 * scale + cornerRadius);
+  quadraticVertex(138.6 * scaleRatio, 303 * scaleRatio, 138.6 * scaleRatio + 2 * scaleRatio, 303 * scaleRatio + cornerRadius);
   // Lado derecho (paralelo al panel del teclado)
-  vertex(140 * scale - 2 * scale, 320 * scale - cornerRadius);
+  vertex(140 * scaleRatio - 2 * scaleRatio, 320 * scaleRatio - cornerRadius);
   // Esquina inferior derecha (redondeada)
-  quadraticVertex(140 * scale, 320 * scale, 140 * scale - cornerRadius, 320 * scale);
+  quadraticVertex(140 * scaleRatio, 320 * scaleRatio, 140 * scaleRatio - cornerRadius, 320 * scaleRatio);
   // Línea inferior (más ancha para mantener paralelismo)
-  vertex(-140 * scale + cornerRadius, 320 * scale);
+  vertex(-140 * scaleRatio + cornerRadius, 320 * scaleRatio);
   // Esquina inferior izquierda (redondeada)
-  quadraticVertex(-140 * scale, 320 * scale, -140 * scale + 2 * scale, 320 * scale - cornerRadius);
+  quadraticVertex(-140 * scaleRatio, 320 * scaleRatio, -140 * scaleRatio + 2 * scaleRatio, 320 * scaleRatio - cornerRadius);
   // Lado izquierdo (paralelo al panel del teclado)
-  vertex(-138.6 * scale - 2 * scale, 303 * scale + cornerRadius);
+  vertex(-138.6 * scaleRatio - 2 * scaleRatio, 303 * scaleRatio + cornerRadius);
   // Esquina superior izquierda (redondeada)
-  quadraticVertex(-138.6 * scale, 303 * scale, -138.6 * scale + cornerRadius, 303 * scale);
+  quadraticVertex(-138.6 * scaleRatio, 303 * scaleRatio, -138.6 * scaleRatio + cornerRadius, 303 * scaleRatio);
   endShape(CLOSE);
   
   // Panel inclinado superior para el teclado
   fill(250, 245, 225);
   stroke(180, 170, 150);
-  strokeWeight(2 * scale);
+  strokeWeight(2 * scaleRatio);
   beginShape();
-  vertex(-100 * scale, 0);
-  vertex(100 * scale, 0);
-  vertex(120 * scale, 235 * scale);
-  vertex(-120 * scale, 235 * scale);
+  vertex(-100 * scaleRatio, 0);
+  vertex(100 * scaleRatio, 0);
+  vertex(120 * scaleRatio, 235 * scaleRatio);
+  vertex(-120 * scaleRatio, 235 * scaleRatio);
   endShape(CLOSE);
   
   // Borde del panel
   fill(235, 225, 205);
   noStroke();
-  rect(-97 * scale, 5 * scale, 194 * scale, 8 * scale, 3 * scale);
+  rect(-97 * scaleRatio, 5 * scaleRatio, 194 * scaleRatio, 8 * scaleRatio, 3 * scaleRatio);
   
   // Dibujar teclado numérico
-  drawKeypad(scale);
+  drawKeypad(scaleRatio);
   
   // Display LCD debajo del teclado
-  drawLCDDisplay(scale);
+  drawLCDDisplay(scaleRatio);
   
   // Dibujar headset y horquilla
-  drawHeadset(scale);
+  drawHeadset(scaleRatio);
   
   pop();
 }
 
-function drawKeypad(scale) {
-  let startX = -55 * scale;
-  let startY = 40 * scale;
-  let buttonSpacing = 55 * scale;
-  let buttonSize = 38 * scale;
+function drawKeypad(scaleRatio) {
+  let startX = -55 * scaleRatio;
+  let startY = 40 * scaleRatio;
+  let buttonSpacing = 55 * scaleRatio;
+  let buttonSize = 38 * scaleRatio;
   
   keypadButtons = [];
   
@@ -553,7 +553,7 @@ function drawKeypad(scale) {
       // Sombra del botón
       fill(0, 0, 0, 80);
       noStroke();
-      rect(-buttonSize/2 + 2 * scale, -buttonSize/2 + 2 * scale, buttonSize, buttonSize, 6 * scale);
+      rect(-buttonSize/2 + 2 * scaleRatio, -buttonSize/2 + 2 * scaleRatio, buttonSize, buttonSize, 6 * scaleRatio);
       
       // Botón principal - color crema oscuro/casi negro
       if (isHovered && canPress) {
@@ -566,20 +566,20 @@ function drawKeypad(scale) {
       
       stroke(30, 25, 20);
       strokeWeight(2);
-      rect(-buttonSize/2, -buttonSize/2, buttonSize, buttonSize, 6 * scale);
+      rect(-buttonSize/2, -buttonSize/2, buttonSize, buttonSize, 6 * scaleRatio);
       
       // Borde superior brillante sutil
       if (!isHovered && canPress) {
         fill(90, 85, 80, 60);
         noStroke();
-        rect(-buttonSize/2, -buttonSize/2, buttonSize, buttonSize * 0.3, 6 * scale, 6 * scale, 0, 0);
+        rect(-buttonSize/2, -buttonSize/2, buttonSize, buttonSize * 0.3, 6 * scaleRatio, 6 * scaleRatio, 0, 0);
       }
       
       // Etiqueta del botón - BLANCO
       fill(canPress ? 255 : 120);
       noStroke();
       textAlign(CENTER, CENTER);
-      textSize(18 * scale);
+      textSize(18 * scaleRatio);
       textStyle(BOLD);
       text(label, 0, 0);
       
@@ -588,7 +588,7 @@ function drawKeypad(scale) {
   }
 }
 
-function drawHeadset(scale) {
+function drawHeadset(scaleRatio) {
   // Animar posición y rotación del headset
   headsetX = lerp(headsetX, targetHeadsetX, 0.15);
   headsetY = lerp(headsetY, targetHeadsetY, 0.15);
@@ -596,23 +596,23 @@ function drawHeadset(scale) {
   
   // Calcular escala dinámica basada en la distancia al rostro
   // Cuando headsetX aumenta (se mueve a la derecha hacia el rostro), el headset se hace más pequeño
-  let distanceToFace = map(headsetX, 0, 500 * scale, 1.0, 0.5); // De tamaño normal (1.0) a mitad (0.5)
+  let distanceToFace = map(headsetX, 0, 500 * scaleRatio, 1.0, 0.5); // De tamaño normal (1.0) a mitad (0.5)
   distanceToFace = constrain(distanceToFace, 0.5, 1.0); // Limitar entre 0.5 y 1.0
-  let dynamicScale = scale * distanceToFace;
+  let dynamicScale = scaleRatio * distanceToFace;
   
   push();
   
   // Horquilla/soporte del teléfono (SIEMPRE VISIBLE - tamaño fijo)
   fill(235, 225, 205);
   stroke(180, 170, 150);
-  strokeWeight(2 * scale);
+  strokeWeight(2 * scaleRatio);
   
   // Base de la horquilla
-  rect(-50 * scale, -80 * scale, 100 * scale, 20 * scale, 5 * scale);
+  rect(-50 * scaleRatio, -80 * scaleRatio, 100 * scaleRatio, 20 * scaleRatio, 5 * scaleRatio);
   
   // Dos ganchos verticales
-  rect(-35 * scale, -70 * scale, 12 * scale, 45 * scale, 4 * scale);
-  rect(23 * scale, -70 * scale, 12 * scale, 45 * scale, 4 * scale);
+  rect(-35 * scaleRatio, -70 * scaleRatio, 12 * scaleRatio, 45 * scaleRatio, 4 * scaleRatio);
+  rect(23 * scaleRatio, -70 * scaleRatio, 12 * scaleRatio, 45 * scaleRatio, 4 * scaleRatio);
   
   // Botón/switch de la horquilla
   if (!headsetLifted) {
@@ -620,15 +620,15 @@ function drawHeadset(scale) {
   } else {
     fill(235, 225, 205); // Liberado
   }
-  rect(-15 * scale, -65 * scale, 30 * scale, 8 * scale, 3 * scale);
+  rect(-15 * scaleRatio, -65 * scaleRatio, 30 * scaleRatio, 8 * scaleRatio, 3 * scaleRatio);
   
   // Cable que conecta el headset con la base del teléfono (estilo retro en espiral)
   // DIBUJAR ANTES DE TRANSFORMAR EL HEADSET
   
   // Punto de anclaje en el headset (parte inferior del auricular izquierdo)
   // Este punto debe rotar con el headset
-  let localAnchorX = -130 * scale; // Posición en el headset sin rotar
-  let localAnchorY = 30 * scale; // Parte inferior del auricular (ajusta este valor)
+  let localAnchorX = -130 * scaleRatio; // Posición en el headset sin rotar
+  let localAnchorY = 30 * scaleRatio; // Parte inferior del auricular (ajusta este valor)
   
   // Aplicar rotación manualmente para calcular la posición real
   let cosRot = cos(headsetRotation);
@@ -636,15 +636,15 @@ function drawHeadset(scale) {
   
   // Punto de inicio (auricular izquierdo del headset con rotación aplicada)
   let cableStartX = headsetX + (localAnchorX * cosRot - localAnchorY * sinRot);
-  let cableStartY = -80 * scale + headsetY + (localAnchorX * sinRot + localAnchorY * cosRot);
+  let cableStartY = -80 * scaleRatio + headsetY + (localAnchorX * sinRot + localAnchorY * cosRot);
   
   // Punto de conexión en la parte trasera/arriba de la base del teléfono
-  let cableEndX = -122 * scale;
-  let cableEndY = -20 * scale;
+  let cableEndX = -122 * scaleRatio;
+  let cableEndY = -20 * scaleRatio;
   
   // Calcular distancia para determinar cuántas espirales dibujar
   let cableDist = dist(cableStartX, cableStartY, cableEndX, cableEndY);
-  let numSpirals = int(cableDist / (25 * scale)); // Una espiral cada 25 unidades
+  let numSpirals = int(cableDist / (25 * scaleRatio)); // Una espiral cada 25 unidades
   
   // Función para dibujar el cable en espiral
   function drawSpiralCable(strokeColor, weight) {
@@ -657,10 +657,10 @@ function drawHeadset(scale) {
       let t = i / (numSpirals * 12);
       
       // Posición base a lo largo del cable (curva bezier)
-      let controlX1 = cableStartX - 100 * scale;
-      let controlY1 = cableStartY + 200 * scale;
-      let controlX2 = cableEndX - 300 * scale;
-      let controlY2 = cableEndY + 200 * scale;
+      let controlX1 = cableStartX - 100 * scaleRatio;
+      let controlY1 = cableStartY + 200 * scaleRatio;
+      let controlX2 = cableEndX - 300 * scaleRatio;
+      let controlY2 = cableEndY + 200 * scaleRatio;
       
       // Punto en la curva bezier
       let x = bezierPoint(cableStartX, controlX1, controlX2, cableEndX, t);
@@ -668,7 +668,7 @@ function drawHeadset(scale) {
       
       // Añadir ondulación en espiral perpendicular a la curva
       let spiralAngle = t * numSpirals * TWO_PI * 2; // 2 vueltas por segmento
-      let spiralRadius = 8 * scale * sin(t * PI); // Amplitud variable (más en el centro)
+      let spiralRadius = 8 * scaleRatio * sin(t * PI); // Amplitud variable (más en el centro)
       
       // Calcular dirección perpendicular
       let dx = bezierTangent(cableStartX, controlX1, controlX2, cableEndX, t);
@@ -691,13 +691,13 @@ function drawHeadset(scale) {
   }
   
   // Dibujar primero el borde oscuro (más grueso)
-  drawSpiralCable(color(180, 170, 150), 5.5 * scale);
+  drawSpiralCable(color(180, 170, 150), 5.5 * scaleRatio);
   
   // Dibujar el cable crema encima (más delgado)
-  drawSpiralCable(color(245, 240, 220), 4 * scale);
+  drawSpiralCable(color(245, 240, 220), 4 * scaleRatio);
   
   // Headset en vista lateral (con escala dinámica)
-  translate(0 + headsetX, -50 * scale + headsetY);
+  translate(0 + headsetX, -50 * scaleRatio + headsetY);
   rotate(headsetRotation);
   
   // Cuerpo principal del auricular - vista LATERAL (con escala dinámica)
@@ -761,7 +761,7 @@ function drawHeadset(scale) {
   pop();
 }
 
-function drawVolumeControl(scale) {
+function drawVolumeControl(scaleRatio) {
   push();
   translate(width * 0.85, height * 0.75);
   
@@ -769,18 +769,18 @@ function drawVolumeControl(scale) {
   fill(255, 255, 255, 200);
   stroke(100);
   strokeWeight(2);
-  rect(-80 * scale, -40 * scale, 160 * scale, 80 * scale, 10);
+  rect(-80 * scaleRatio, -40 * scaleRatio, 160 * scaleRatio, 80 * scaleRatio, 10);
   
   // Título
   fill(60);
   noStroke();
   textAlign(CENTER, TOP);
-  textSize(14 * scale);
-  text("🔊 Volumen", 0, -30 * scale);
+  textSize(14 * scaleRatio);
+  text("🔊 Volumen", 0, -30 * scaleRatio);
   
   // Barra del slider
-  let sliderWidth = 120 * scale;
-  let sliderHeight = 8 * scale;
+  let sliderWidth = 120 * scaleRatio;
+  let sliderHeight = 8 * scaleRatio;
   let sliderX = -sliderWidth / 2;
   let sliderY = 0;
   
@@ -799,43 +799,43 @@ function drawVolumeControl(scale) {
   fill(255);
   stroke(100);
   strokeWeight(2);
-  circle(handleX, sliderY + sliderHeight / 2, 20 * scale);
+  circle(handleX, sliderY + sliderHeight / 2, 20 * scaleRatio);
   
   fill(0, 150, 255);
   noStroke();
-  circle(handleX, sliderY + sliderHeight / 2, 10 * scale);
+  circle(handleX, sliderY + sliderHeight / 2, 10 * scaleRatio);
   
   // Guardar posición del slider para detección de click
   this.volumeSliderBounds = {
     x: sliderX + width * 0.85,
     y: sliderY + height * 0.75,
     width: sliderWidth,
-    height: sliderHeight + 20 * scale,
+    height: sliderHeight + 20 * scaleRatio,
     centerX: width * 0.85,
     centerY: height * 0.75
   };
   
   // Valor del volumen
-  textSize(12 * scale);
+  textSize(12 * scaleRatio);
   fill(80);
-  text(Math.round(masterVolume * 100) + "%", 0, 20 * scale);
+  text(Math.round(masterVolume * 100) + "%", 0, 20 * scaleRatio);
   
   pop();
 }
 
-function drawEstadoInfo(scale) {
+function drawEstadoInfo(scaleRatio) {
   push();
   translate(width * 0.5, height * 0.90); // Movido más abajo de 0.88 a 0.90
   
   fill(255, 255, 255, 230);
   stroke(100);
   strokeWeight(2);
-  rect(-250 * scale, -45 * scale, 500 * scale, 90 * scale, 10);
+  rect(-250 * scaleRatio, -45 * scaleRatio, 500 * scaleRatio, 90 * scaleRatio, 10);
   
   fill(60);
   noStroke();
   textAlign(CENTER, CENTER);
-  textSize(16 * scale);
+  textSize(16 * scaleRatio);
   
   let statusText = "";
   let statusColor = color(60);
@@ -857,17 +857,17 @@ function drawEstadoInfo(scale) {
       statusColor = color(0, 100, 200);
       break;
     case STATES.CALLING_RINGING:
-      statusText = `Llamando a ${currentPersonaje.nombre}...`;
+      statusText = currentPersonaje ? `Llamando a ${currentPersonaje.nombre}...` : "Llamando...";
       instruction = "Esperando respuesta...";
       statusColor = color(100, 0, 200);
       break;
     case STATES.CALLING_INTRO:
-      statusText = `Llamada con ${currentPersonaje.nombre}`;
+      statusText = currentPersonaje ? `Llamada con ${currentPersonaje.nombre}` : "En llamada";
       instruction = "Escucha la introducción...";
       statusColor = color(200, 0, 200);
       break;
     case STATES.CALLING_OPCIONES:
-      statusText = `${currentPersonaje.nombre} - Opciones ${opcionesPlayCount}/2`;
+      statusText = currentPersonaje ? `${currentPersonaje.nombre} - Opciones ${opcionesPlayCount}/2` : `Opciones ${opcionesPlayCount}/2`;
       instruction = "Puedes presionar 1, 2 o 3 en cualquier momento";
       statusColor = color(150, 0, 200);
       break;
@@ -896,13 +896,13 @@ function drawEstadoInfo(scale) {
   
   fill(statusColor);
   textStyle(BOLD);
-  textSize(18 * scale);
-  text(statusText, 0, -15 * scale);
+  textSize(18 * scaleRatio);
+  text(statusText, 0, -15 * scaleRatio);
   
   fill(100);
   textStyle(NORMAL);
-  textSize(14 * scale);
-  text(instruction, 0, 10 * scale);
+  textSize(14 * scaleRatio);
+  text(instruction, 0, 10 * scaleRatio);
   
   pop();
 }
@@ -956,7 +956,7 @@ function handleTimers() {
 function mousePressed() {
   startAudioContext();
   
-  let scale = min(width / 1200, height / 800);
+  let scaleRatio = min(width / 1200, height / 800);
   
   // Click en slider de volumen
   if (this.volumeSliderBounds) {
@@ -974,9 +974,9 @@ function mousePressed() {
   
   // Click en headset (área más grande)
   let headsetWorldX = width * 0.5 + headsetX;
-  let headsetWorldY = height * 0.42 - 50 * scale + headsetY;
+  let headsetWorldY = height * 0.42 - 50 * scaleRatio + headsetY;
   
-  if (dist(mouseX, mouseY, headsetWorldX, headsetWorldY) < 130 * scale) {
+  if (dist(mouseX, mouseY, headsetWorldX, headsetWorldY) < 130 * scaleRatio) {
     isDraggingHeadset = true;
     if (!headsetLifted) {
       toggleHeadset();
@@ -1014,16 +1014,16 @@ function mousePressed() {
 
 function mouseDragged() {
   if (isDraggingHeadset && headsetLifted) {
-    let scale = min(width / 1200, height / 800);
+    let scaleRatio = min(width / 1200, height / 800);
     let baseX = width * 0.5;
-    let baseY = height * 0.42 - 50 * scale;
+    let baseY = height * 0.42 - 50 * scaleRatio;
     
     targetHeadsetX = mouseX - baseX;
     targetHeadsetY = mouseY - baseY;
     
     // Limitar el rango de movimiento (ampliado para alcanzar el rostro de la imagen)
-    targetHeadsetX = constrain(targetHeadsetX, -300 * scale, 500 * scale);
-    targetHeadsetY = constrain(targetHeadsetY, -400 * scale, 200 * scale);
+    targetHeadsetX = constrain(targetHeadsetX, -300 * scaleRatio, 500 * scaleRatio);
+    targetHeadsetY = constrain(targetHeadsetY, -400 * scaleRatio, 200 * scaleRatio);
   }
   
   // Actualizar slider de volumen si se está arrastrando
@@ -1045,14 +1045,14 @@ function mouseReleased() {
   
   // Si el headset está levantado pero muy lejos, colgarlo
   if (headsetLifted) {
-    let scale = min(width / 1200, height / 800);
+    let scaleRatio = min(width / 1200, height / 800);
     let baseX = width * 0.5;
-    let baseY = height * 0.42 - 50 * scale;
+    let baseY = height * 0.42 - 50 * scaleRatio;
     let currentX = baseX + headsetX;
     let currentY = baseY + headsetY;
     
     // Si está muy cerca de la posición original, colgar
-    if (dist(currentX, currentY, baseX, baseY) < 30 * scale) {
+    if (dist(currentX, currentY, baseX, baseY) < 30 * scaleRatio) {
       toggleHeadset();
     }
   }
@@ -1206,8 +1206,11 @@ function playRingingTone() {
         pickupSound.play();
         // Esperar a que termine el sonido de pickup para empezar intro
         pickupSound.onended(() => {
-          changeState(STATES.CALLING_INTRO);
-          playIntroAudio();
+          // Verificar que aún estamos en el estado correcto y el personaje es válido
+          if (currentState === STATES.CALLING_RINGING && currentPersonajeIndex > 0 && currentPersonaje) {
+            changeState(STATES.CALLING_INTRO);
+            playIntroAudio();
+          }
         });
       } else {
         // Si no hay sonido de pickup, ir directo a intro
@@ -1251,6 +1254,14 @@ function playBusyTone() {
 function playIntroAudio() {
   stopAllTones();
   
+  // Validar que el personaje sea válido
+  if (!currentPersonaje || currentPersonajeIndex < 1 || !personajeAudios[currentPersonajeIndex]) {
+    console.error(`Error: Personaje inválido (index: ${currentPersonajeIndex})`);
+    changeState(STATES.ERROR);
+    playErrorTone();
+    return;
+  }
+  
   console.log(`Reproduciendo introducción del personaje ${currentPersonajeIndex}`);
   
   // Reproducir audio real
@@ -1260,13 +1271,21 @@ function playIntroAudio() {
   
   // Cuando termine la intro, reproducir audio de opciones
   currentAudio.onended(() => {
-    if (currentState === STATES.CALLING_INTRO) {
+    if (currentState === STATES.CALLING_INTRO && currentPersonaje && currentPersonajeIndex > 0) {
       playOpcionesAudio();
     }
   });
 }
 
 function playOpcionesAudio() {
+  // Validar que el personaje sea válido
+  if (!currentPersonaje || currentPersonajeIndex < 1 || !personajeAudios[currentPersonajeIndex]) {
+    console.error(`Error: Personaje inválido al reproducir opciones (index: ${currentPersonajeIndex})`);
+    changeState(STATES.ERROR);
+    playErrorTone();
+    return;
+  }
+  
   console.log(`Reproduciendo opciones del personaje ${currentPersonajeIndex} (intento ${opcionesPlayCount + 1}/2)`);
   changeState(STATES.CALLING_OPCIONES);
   opcionesPlayCount++;
@@ -1303,6 +1322,14 @@ function handleOpcionesEnded() {
 
 function playTemaAudio(option) {
   stopAllTones();
+  
+  // Validar que el personaje sea válido
+  if (!currentPersonaje || currentPersonajeIndex < 1 || !personajeAudios[currentPersonajeIndex]) {
+    console.error(`Error: Personaje inválido al reproducir tema (index: ${currentPersonajeIndex})`);
+    changeState(STATES.ERROR);
+    playErrorTone();
+    return;
+  }
   
   console.log(`Reproduciendo tema ${option} del personaje ${currentPersonajeIndex}`);
   
