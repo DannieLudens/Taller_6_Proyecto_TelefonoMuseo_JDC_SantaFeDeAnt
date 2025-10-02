@@ -5,6 +5,7 @@
 ```
 📁 Taller_6_Proyecto_TelefonoMuseo_JDC_SantaFeDeAnt/
 │
+├── README.md                      ← Introducción principal del repositorio ✨
 ├── 📂 .github/                    ← Configuración del repositorio
 │   ├── copilot-instructions.md
 │   └── ORGANIZACION_PROYECTOS.md
