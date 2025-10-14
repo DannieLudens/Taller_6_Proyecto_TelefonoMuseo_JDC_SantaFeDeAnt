@@ -317,79 +317,98 @@ function drawSettingsPanel(scaleRatio) {
 /**
  * Dibuja animación de call-to-action (¡Levántame! / ¡Acércame!)
  * UBICACIÓN ORIGINAL: sketch.js líneas 1492-1585
+ * ANIMACIÓN ORIGINAL RESTAURADA: Breathe effect + posición sobre headset
  */
 function drawCallToAction(scaleRatio) {
-  breathePhase += 0.03;
-  let breatheScale = 1 + sin(breathePhase) * 0.08;
-  
   // Determinar qué mensaje mostrar
   let showLiftMessage = (currentState === STATES.IDLE && !headsetLifted);
-  let showBringToEarMessage = (currentState === STATES.DIAL_TONE && headsetLifted);
+  let showBringToEarMessage = (headsetLifted && currentState === STATES.DIAL_TONE);
   
+  // Si no debe mostrar ningún mensaje, hacer fade out
   if (!showLiftMessage && !showBringToEarMessage) {
     callToActionAlpha = lerp(callToActionAlpha, 0, 0.1);
+    if (callToActionAlpha < 5) {
+      breathePhase = 0;
+      return;
+    }
   } else {
-    callToActionAlpha = lerp(callToActionAlpha, 255, 0.1);
+    // Fade in
+    callToActionAlpha = lerp(callToActionAlpha, 255, 0.05);
   }
   
+  // Solo dibujar si tiene opacidad significativa
   if (callToActionAlpha < 10) return;
   
+  // Incrementar fase de respiración
+  breathePhase += 0.03;
+  
+  // Efecto de respiración suave
+  let breatheScale = 1 + sin(breathePhase) * 0.08; // Oscila entre 0.92 y 1.08
+  let breatheY = sin(breathePhase * 1.5) * 8; // Movimiento vertical suave
+  
   push();
-  translate(width * 0.5, height * 0.42 - 150 * scaleRatio);
-  scale(breatheScale);
   
-  // Mensaje: ¡Levántame!
+  // Posicionar sobre el headset
+  let headsetWorldX = width * 0.5 + headsetX * scaleRatio;
+  let headsetWorldY = height * 0.42 - 50 * scaleRatio + headsetY * scaleRatio;
+  
   if (showLiftMessage) {
-    fill(255, 200, 50, callToActionAlpha);
-    stroke(139, 90, 60, callToActionAlpha);
-    strokeWeight(3);
-    textAlign(CENTER, CENTER);
-    textSize(32 * scaleRatio);
-    textStyle(BOLD);
-    text("¡Levántame!", 0, 0);
+    // ===== MENSAJE: "¡Levántame!" =====
+    translate(headsetWorldX, headsetWorldY - 120 * scaleRatio + breatheY);
+    scale(breatheScale);
     
-    // Flecha hacia abajo
+    // Flecha apuntando hacia ABAJO ↓
     fill(255, 200, 50, callToActionAlpha);
-    stroke(139, 90, 60, callToActionAlpha);
+    stroke(100, 50, 0, callToActionAlpha * 0.7);
     strokeWeight(3);
-    beginShape();
-    vertex(0, 50 * scaleRatio);
-    vertex(-15 * scaleRatio, 30 * scaleRatio);
-    vertex(-6 * scaleRatio, 30 * scaleRatio);
-    vertex(-6 * scaleRatio, 20 * scaleRatio);
-    vertex(6 * scaleRatio, 20 * scaleRatio);
-    vertex(6 * scaleRatio, 30 * scaleRatio);
-    vertex(15 * scaleRatio, 30 * scaleRatio);
-    endShape(CLOSE);
-  }
-  
-  // Mensaje: ¡Acércame al oído!
-  if (showBringToEarMessage) {
-    fill(100, 200, 255, callToActionAlpha);
-    stroke(40, 80, 120, callToActionAlpha);
-    strokeWeight(3);
-    textAlign(CENTER, CENTER);
-    textSize(28 * scaleRatio);
-    textStyle(BOLD);
-    text("¡Acércame", 0, -10 * scaleRatio);
-    text("al oído!", 0, 20 * scaleRatio);
     
-    // Flecha hacia la derecha
-    push();
-    translate(150 * scaleRatio, 0);
-    fill(100, 200, 255, callToActionAlpha);
-    stroke(40, 80, 120, callToActionAlpha);
-    strokeWeight(3);
     beginShape();
-    vertex(30 * scaleRatio, 0);
-    vertex(5 * scaleRatio, -15 * scaleRatio);
-    vertex(5 * scaleRatio, -6 * scaleRatio);
-    vertex(-15 * scaleRatio, -6 * scaleRatio);
-    vertex(-15 * scaleRatio, 6 * scaleRatio);
-    vertex(5 * scaleRatio, 6 * scaleRatio);
-    vertex(5 * scaleRatio, 15 * scaleRatio);
+    vertex(0, 30);
+    vertex(-15, 5);
+    vertex(-6, 5);
+    vertex(-6, -15);
+    vertex(6, -15);
+    vertex(6, 5);
+    vertex(15, 5);
     endShape(CLOSE);
-    pop();
+    
+    // Texto "¡Levántame!"
+    noStroke();
+    fill(255, 255, 255, callToActionAlpha);
+    textAlign(CENTER, CENTER);
+    textSize(22 * scaleRatio);
+    textStyle(BOLD);
+    text("¡Levántame!", 0, -45);
+    
+  } else if (showBringToEarMessage) {
+    // ===== MENSAJE: "¡Acércame al oído!" =====
+    translate(headsetWorldX, headsetWorldY - 120 * scaleRatio + breatheY);
+    scale(breatheScale);
+    
+    // Flecha apuntando hacia la DERECHA →
+    fill(100, 200, 255, callToActionAlpha); // Azul para diferenciarlo
+    stroke(0, 100, 150, callToActionAlpha * 0.7);
+    strokeWeight(3);
+    
+    // Dibujar flecha horizontal hacia la derecha
+    beginShape();
+    vertex(30, 0);  // Punta
+    vertex(5, -15); // Superior izquierda
+    vertex(5, -6);
+    vertex(-15, -6);
+    vertex(-15, 6);
+    vertex(5, 6);
+    vertex(5, 15);  // Inferior izquierda
+    endShape(CLOSE);
+    
+    // Texto "¡Acércame al oído!"
+    noStroke();
+    fill(255, 255, 255, callToActionAlpha);
+    textAlign(CENTER, CENTER);
+    textSize(18 * scaleRatio); // Un poco más pequeño
+    textStyle(BOLD);
+    text("¡Acércame", 0, -50);
+    text("al oído!", 0, -30);
   }
   
   pop();
