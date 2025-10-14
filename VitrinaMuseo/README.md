@@ -3,7 +3,7 @@
 <div align="center">
 
 ![p5.js](https://img.shields.io/badge/p5.js-v1.11.10-ED225D?logo=p5.js&logoColor=white)
-![Estado](https://img.shields.io/badge/Estado-En%20Desarrollo-yellow)
+![Estado](https://img.shields.io/badge/Estado-v2.5%20Stable-green)
 ![Licencia](https://img.shields.io/badge/Licencia-MIT-blue)
 
 **Sistema de narrativas secuenciales automáticas con iluminación dinámica**
@@ -16,7 +16,12 @@
 
 ## 📖 Sobre el Proyecto
 
-Experiencia museográfica interactiva de **vitrina inteligente** desarrollada para el **Museo Juan del Corral** en Santa Fe de Antioquia, Colombia. El sistema detecta la presencia de visitantes mediante sensores de proximidad y automáticamente reproduce narrativas secuenciales de 1-6 objetos, acompañadas de iluminación dinámica que guía la atención del visitante.
+Experiencia museográfica interactiva de **vitrina inteligente** desarrollada para el **Museo Juan del Corral** en Santa Fe de Antioquia, Colombia. El sistema detecta la presencia de visitantes mediante sensores de proximidad y automáticamente reproduce narrativas secuenciales de 3 objetos patrimoniales, acompañadas de iluminación dinámica que guía la atención del visitante.
+
+### 🎭 Objetos Exhibidos
+- **Camisa Indígena** con ilustraciones de mapa
+- **Máscara de los Diablitos** (celebración de diciembre)
+- **Muñeco Curandero** de la cultura Cuna
 
 ### 🎯 Contexto Académico
 
@@ -26,17 +31,20 @@ Proyecto de **Taller 6 para la Experiencia de Usuario en Museos**
 
 ---
 
-## ✨ Características
+## ✨ Características (v2.5)
 
-### 🎨 Sistema Visual
-- **Vitrina de museo realista** con marco de madera y vidrio reflectante
-- **1-6 objetos históricos** configurables con representación visual
-- **Iluminación dinámica por objeto**:
-  - 25% intensidad en reposo
-  - 65% intensidad al narrar (iluminación focal)
-- **Transiciones suaves** entre narrativas con animaciones lerp
-- **Indicador de sensor de proximidad** visual
-- **Bocina superior** con LED de actividad
+### 🎨 Sistema Visual Modular
+- **3 layouts de vitrina** intercambiables:
+  - Layout 1: Vitrinas individuales (3 vitrinas separadas)
+  - Layout 2: Vitrina horizontal (objetos en línea)
+  - Layout 3: Niveles diferentes (objetos escalonados)
+- **Vitrina realista** con marco de madera y vidrio reflectante
+- **3 objetos patrimoniales** con imágenes PNG reales y aspect ratio preservado
+- **Iluminación LED dinámica** por objeto dentro de cada vitrina
+- **Tarimillas con texto** (nombre + descripción) en negro legible
+- **Bocinas con indicadores LED verdes**:
+  - Individuales por vitrina (Layout 1)
+  - Compartida con LED pulsante (Layouts 2-3)
 - **Diseño responsive** adaptable a diferentes pantallas
 
 ### 🔊 Sistema de Audio
@@ -104,40 +112,66 @@ Proyecto de **Taller 6 para la Experiencia de Usuario en Museos**
 
 ## 🛠️ Configuración de Objetos
 
-### Editar `sketch.js` líneas 17-52:
+### Editar `js/constants.js` - Array de objetos:
 
 ```javascript
 const objetos = [
   {
-    nombre: "Vasija Colonial",
-    descripcion: "Cerámica del siglo XVIII",
-    narrativa: null, // Se carga en preload()
-    posX: 15,  // Posición en % (0-100)
-    color: [180, 120, 80] // RGB del objeto
+    nombre: "Camisa Indígena",
+    descripcion: "Ilustraciones de mapa",
+    narrativa: null,
+    audioFile: "Camisa Indigena con ilustraciones de mapa.mp3",
+    imageFile: "camisa indigena.png",
+    imagen: null,
+    posX: 25,  // Posición en % (0-100)
+    color: [180, 120, 80]
   },
-  // ... hasta 6 objetos
+  // ... 3 objetos totales
 ];
 ```
 
-### Agregar Audios:
+### Agregar Nuevos Objetos:
 
-Coloca archivos MP3 en `assets/sounds/` con el formato:
-- `objeto_1_narrativa.mp3`
-- `objeto_2_narrativa.mp3`
-- `objeto_3_narrativa.mp3`
-- ...
+1. **Audio MP3**: Coloca en `assets/sounds/`
+2. **Imagen PNG/JPG**: Coloca en `assets/images/`
+3. **Agregar al array**: Edita `objetos` en `js/constants.js`
+4. **Ajustar posX**: Distribuye entre 0-100 para espaciado visual
 
-**Descomenta la línea 61** en `preload()` para cargar audios reales:
-```javascript
-objetos[i].narrativa = loadSound(audioPath);
-```
+---
 
-### Reemplazar Representación Visual:
+## 🎯 Mejoras Implementadas
 
-Para usar imágenes reales de los objetos:
-1. Coloca imágenes PNG/JPG en `assets/images/`
-2. Carga en `preload()`: `objetoImagen = loadImage('assets/images/objeto.png')`
-3. Reemplaza el código de dibujo en `drawObjetos()` (línea 246+)
+### v2.5 - Bocinas e Indicadores (Última versión)
+- ✅ Bocinas individuales en Layout 1 con LED verde
+- ✅ Bocina compartida en Layouts 2-3 con LED pulsante
+- ✅ Posicionamiento preciso (baseY + 22)
+- ✅ Aspect ratio preservado en imágenes de objetos
+- ✅ Tarimilla única en layouts compartidos
+
+### v2.4 - LEDs Inteligentes
+- ✅ LEDs posicionados dentro del vidrio
+- ✅ Comportamiento basado en intensidad de iluminación
+- ✅ Transiciones suaves entre estados
+
+### v2.3 - Comportamiento Narrativo
+- ✅ Detección por vitrina individual en Layout 1
+- ✅ Comportamiento unificado en Layouts 2-3
+- ✅ Timers independientes por vitrina
+
+### v2.2 - UX Mejorada
+- ✅ Barra de progreso compacta (lado izquierdo)
+- ✅ Recuadro de estado reposicionado
+- ✅ Controles agrupados visualmente
+
+### v2.1 - Ajustes Visuales
+- ✅ 3 objetos finales seleccionados
+- ✅ Imágenes PNG reales integradas
+- ✅ Textos en negro sobre tarimillas claras
+
+### v2.0 - Refactorización Modular
+- ✅ Código dividido en 9 módulos especializados
+- ✅ Mantenibilidad mejorada
+- ✅ Separación de responsabilidades
 
 ---
 
@@ -163,22 +197,34 @@ npx http-server -p 8000
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📁 Estructura del Proyecto (v2.5 - Modularizado)
 
 ```
 VitrinaMuseo/
 ├── index.html                # Punto de entrada
-├── sketch.js                 # Lógica principal (~650 líneas)
+├── sketch_new.js             # Sketch principal modularizado
 ├── style.css                 # Estilos básicos
-├── README.md                 # Este archivo
+├── README.md                 # Este archivo (consolidado)
+├── js/                       # Módulos JavaScript
+│   ├── constants.js          # Constantes y configuraciones
+│   ├── state.js              # Máquina de estados
+│   ├── audio.js              # Sistema de audio
+│   ├── background.js         # Renderizado de fondo
+│   ├── ui-vitrina.js         # Componentes de vitrina (vidrio, base, LEDs, bocinas)
+│   ├── ui-objects.js         # Objetos, tarimillas, luces
+│   ├── ui-controls.js        # Controles (volumen, layout, background)
+│   ├── ui-status.js          # Indicadores de estado
+│   ├── interactions.js       # Detección de proximidad
+│   └── README.md             # Documentación de módulos
 └── assets/
     ├── sounds/               # Narrativas de objetos
-    │   ├── objeto_1_narrativa.mp3
-    │   ├── objeto_2_narrativa.mp3
-    │   └── ...
-    └── images/               # Imágenes de objetos (opcional)
-        ├── objeto_1.png
-        └── ...
+    │   ├── Camisa Indigena con ilustraciones de mapa.mp3
+    │   ├── Mascara de los diablitos celebracion de diciembre .mp3
+    │   └── Muñeco curandero de la cultura cuna para los enfermos.mp3
+    └── images/               # Imágenes PNG de objetos
+        ├── camisa indigena.png
+        ├── mascara diablitos.png
+        └── muneco curandero.png
 ```
 
 ---
@@ -257,26 +303,37 @@ void loop() {
 
 ## 🎨 Personalización
 
-### Tiempos de Secuencia:
-
+### Cambiar Layout:
+Usa los botones en pantalla o modifica `currentLayout` en `js/constants.js`:
 ```javascript
-// En líneas 13-15
-const DETECTION_THRESHOLD = 5000; // 5 seg. para activar
-const TRANSITION_DELAY = 2000;    // 2 seg. entre objetos
-const COOLDOWN_DELAY = 5000;      // 5 seg. antes de reiniciar
+let currentLayout = LAYOUTS.INDIVIDUAL; // INDIVIDUAL, HORIZONTAL, LEVELS
 ```
 
-### Intensidad de Luces:
-
+### Tiempos de Secuencia (js/constants.js):
 ```javascript
-// En líneas 58-59
-const LIGHT_IDLE = 0.25;   // 25% en reposo
-const LIGHT_ACTIVE = 0.65; // 65% al narrar
+const TIMINGS = {
+  DETECTION_THRESHOLD: 5000,  // 5 seg. para activar
+  TRANSITION_DELAY: 3000,     // 3 seg. entre objetos
+  COOLDOWN_DELAY: 3000        // 3 seg. antes de reiniciar
+};
 ```
 
-### Número de Objetos:
+### Intensidad de Luces (js/constants.js):
+```javascript
+const LIGHTING = {
+  IDLE: 0.25,    // 25% en reposo
+  ACTIVE: 0.85   // 85% al narrar
+};
+```
 
-Simplemente agrega/quita elementos del array `objetos` (líneas 17-52). El sistema se ajusta automáticamente.
+### Colores (js/constants.js):
+```javascript
+const COLORS = {
+  WOOD: [139, 90, 60],
+  GLASS: [200, 230, 255, 60],
+  // ... etc
+};
+```
 
 ---
 
@@ -322,11 +379,30 @@ IDLE → DETECTING → PLAYING_NARRATIVE → TRANSITIONING → COOLDOWN → [loo
 | Característica | Valor |
 |---------------|-------|
 | Framework | p5.js v1.11.10 + p5.sound |
-| Objetos soportados | 1-6 configurable |
+| Objetos exhibidos | 3 (Camisa, Máscara, Muñeco) |
+| Layouts disponibles | 3 (Individual, Horizontal, Niveles) |
 | Resolución recomendada | 1400×900 o superior |
-| Formato audio | MP3 (narrativas) |
+| Formato audio | MP3 (narrativas reales) |
+| Formato imágenes | PNG (con transparencia preservada) |
+| Arquitectura | Modular (9 archivos JS) |
 | Sensor recomendado | Ultrasónico HC-SR04 o IR |
 | Rango de detección | 30-100cm (ajustable) |
+
+---
+
+## 📂 Assets Incluidos
+
+### Audios (assets/sounds/)
+- ✅ `Camisa Indigena con ilustraciones de mapa.mp3`
+- ✅ `Mascara de los diablitos celebracion de diciembre .mp3`
+- ✅ `Muñeco curandero de la cultura cuna para los enfermos.mp3`
+
+### Imágenes (assets/images/)
+- ✅ `camisa indigena.png`
+- ✅ `mascara diablitos.png`
+- ✅ `muneco curandero.png`
+
+**Nota**: Las imágenes mantienen su proporción original (aspect ratio) al renderizarse.
 
 ---
 

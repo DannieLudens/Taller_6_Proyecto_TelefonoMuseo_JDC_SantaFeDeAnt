@@ -19,49 +19,31 @@ const DETECTION_THRESHOLD = 5000; // 5 segundos
 const TRANSITION_DELAY = 2000; // 2 segundos entre narrativas
 const COOLDOWN_DELAY = 5000; // 5 segundos después de terminar
 
-// Configuración de objetos en la vitrina (1-6 objetos)
+// Configuración de objetos en la vitrina (3 objetos basados en audios reales)
 const objetos = [
   {
-    nombre: "Vasija Colonial",
-    descripcion: "Cerámica del siglo XVIII",
+    nombre: "Camisa Indígena",
+    descripcion: "Ilustraciones de mapa",
     narrativa: null, // loadSound en preload()
-    posX: 15,  // Porcentaje de posición en X
+    audioFile: "Camisa Indigena con ilustraciones de mapa.mp3",
+    posX: 25,  // Porcentaje de posición en X (más espaciado)
     color: [180, 120, 80] // Color base del objeto
   },
   {
-    nombre: "Pergamino Antiguo",
-    descripcion: "Documento histórico",
+    nombre: "Máscara de los Diablitos",
+    descripcion: "Celebración de diciembre",
     narrativa: null,
-    posX: 30,
-    color: [220, 200, 160]
+    audioFile: "Mascara de los diablitos celebracion de diciembre .mp3",
+    posX: 50,
+    color: [200, 50, 50] // Rojo para los diablitos
   },
   {
-    nombre: "Espada Colonial",
-    descripcion: "Arma de conquistador",
+    nombre: "Muñeco Curandero",
+    descripcion: "Cultura Cuna",
     narrativa: null,
-    posX: 45,
-    color: [160, 160, 180]
-  },
-  {
-    nombre: "Vestido de Época",
-    descripcion: "Indumentaria siglo XIX",
-    narrativa: null,
-    posX: 60,
-    color: [140, 100, 120]
-  },
-  {
-    nombre: "Cámara Antigua",
-    descripcion: "Fotografía histórica",
-    narrativa: null,
+    audioFile: "Muñeco curandero de la cultura cuna para los enfermos.mp3",
     posX: 75,
-    color: [100, 100, 100]
-  },
-  {
-    nombre: "Máscara Teatral",
-    descripcion: "Arte escénico local",
-    narrativa: null,
-    posX: 90,
-    color: [200, 150, 100]
+    color: [140, 100, 120]
   }
 ];
 
@@ -83,26 +65,24 @@ let progressBar = 0;
 let maxProgress = 0;
 
 function preload() {
-  // Cargar narrativas de objetos
-  // NOTA: Crear archivos MP3 con nombres:
-  // - objeto_1_narrativa.mp3
-  // - objeto_2_narrativa.mp3
-  // - etc.
+  // Cargar narrativas de objetos desde archivos MP3 reales
+  console.log("Cargando archivos de audio...");
   
   for (let i = 0; i < objetos.length; i++) {
-    let audioPath = `assets/sounds/objeto_${i+1}_narrativa.mp3`;
-    // Por ahora comentado hasta tener los archivos
-    // objetos[i].narrativa = loadSound(audioPath);
+    let audioPath = `assets/sounds/${objetos[i].audioFile}`;
+    console.log(`Cargando: ${audioPath}`);
     
-    // PLACEHOLDER: Simular carga exitosa
-    objetos[i].narrativa = { 
-      play: () => console.log(`Reproduciendo: ${objetos[i].nombre}`),
-      stop: () => {},
-      isPlaying: () => false,
-      setVolume: (v) => {},
-      onended: (callback) => { setTimeout(callback, 3000); } // Simular 3 segundos
-    };
+    try {
+      objetos[i].narrativa = loadSound(audioPath, 
+        () => console.log(`✓ Audio ${i+1} cargado: ${objetos[i].nombre}`),
+        (err) => console.error(`✗ Error cargando audio ${i+1}:`, err)
+      );
+    } catch(e) {
+      console.error(`Error en preload para objeto ${i+1}:`, e);
+    }
   }
+  
+  console.log(`Total de ${objetos.length} objetos configurados`);
 }
 
 function setup() {
@@ -204,37 +184,37 @@ function drawObjetos(scaleRatio) {
   
   for (let i = 0; i < objetos.length; i++) {
     let obj = objetos[i];
-    let x = map(obj.posX, 0, 100, -550 * scaleRatio, 550 * scaleRatio);
+    let x = map(obj.posX, 0, 100, -450 * scaleRatio, 450 * scaleRatio);
     
-    // Luz desde arriba (efecto de spotlight)
+    // Luz desde arriba (efecto de spotlight) - más amplia para 3 objetos
     let lightIntensity = lights[i].current;
     
     // Cono de luz con gradiente
     drawingContext.save();
     let gradient = drawingContext.createRadialGradient(
       x, -250 * scaleRatio, 0,
-      x, -50 * scaleRatio, 100 * scaleRatio
+      x, -50 * scaleRatio, 120 * scaleRatio
     );
     gradient.addColorStop(0, `rgba(255, 255, 200, ${lightIntensity * 0.8})`);
     gradient.addColorStop(0.5, `rgba(255, 255, 200, ${lightIntensity * 0.4})`);
     gradient.addColorStop(1, `rgba(255, 255, 200, 0)`);
     drawingContext.fillStyle = gradient;
     drawingContext.fillRect(
-      x - 80 * scaleRatio,
+      x - 100 * scaleRatio,
       -250 * scaleRatio,
-      160 * scaleRatio,
+      200 * scaleRatio,
       300 * scaleRatio
     );
     drawingContext.restore();
     
-    // Objeto (representación simple - reemplazar con imágenes reales)
+    // Objeto (representación más grande para 3 objetos)
     push();
     translate(x, -30 * scaleRatio);
     
-    // Sombra del objeto
+    // Sombra del objeto (más grande)
     fill(0, 0, 0, 100 + lightIntensity * 50);
     noStroke();
-    ellipse(0, 60 * scaleRatio, 70 * scaleRatio, 20 * scaleRatio);
+    ellipse(0, 70 * scaleRatio, 90 * scaleRatio, 25 * scaleRatio);
     
     // Objeto principal
     let [r, g, b] = obj.color;
@@ -246,38 +226,60 @@ function drawObjetos(scaleRatio) {
     stroke(100, 80, 60);
     strokeWeight(2 * scaleRatio);
     
-    // Forma del objeto (varía según índice)
-    if (i % 3 === 0) {
-      // Objeto cilíndrico (vasija)
-      ellipse(0, 0, 60 * scaleRatio, 70 * scaleRatio);
-      ellipse(0, -30 * scaleRatio, 45 * scaleRatio, 15 * scaleRatio);
-    } else if (i % 3 === 1) {
-      // Objeto rectangular (libro, pergamino)
-      rect(-30 * scaleRatio, -35 * scaleRatio, 60 * scaleRatio, 70 * scaleRatio, 5);
+    // Forma del objeto específica para cada uno
+    if (i === 0) {
+      // Camisa Indígena - forma de prenda
+      rect(-40 * scaleRatio, -45 * scaleRatio, 80 * scaleRatio, 90 * scaleRatio, 8);
+      // Cuello
+      rect(-15 * scaleRatio, -45 * scaleRatio, 30 * scaleRatio, 15 * scaleRatio, 3);
+      // Decoraciones (líneas de mapa)
+      stroke(80, 60, 40);
+      strokeWeight(1);
+      for(let j = 0; j < 5; j++) {
+        line(-30 * scaleRatio, (-30 + j * 15) * scaleRatio, 30 * scaleRatio, (-30 + j * 15) * scaleRatio);
+      }
+    } else if (i === 1) {
+      // Máscara de diablitos - forma de máscara
+      fill(r + lightIntensity * 75, g + lightIntensity * 75, b + lightIntensity * 75);
+      ellipse(0, -10 * scaleRatio, 70 * scaleRatio, 80 * scaleRatio);
+      // Cuernos
+      triangle(-35 * scaleRatio, -50 * scaleRatio, -25 * scaleRatio, -30 * scaleRatio, -20 * scaleRatio, -50 * scaleRatio);
+      triangle(35 * scaleRatio, -50 * scaleRatio, 25 * scaleRatio, -30 * scaleRatio, 20 * scaleRatio, -50 * scaleRatio);
+      // Ojos
+      fill(0);
+      ellipse(-15 * scaleRatio, -15 * scaleRatio, 10 * scaleRatio, 15 * scaleRatio);
+      ellipse(15 * scaleRatio, -15 * scaleRatio, 10 * scaleRatio, 15 * scaleRatio);
     } else {
-      // Objeto cuadrado (marco, máscara)
-      rect(-35 * scaleRatio, -35 * scaleRatio, 70 * scaleRatio, 70 * scaleRatio, 8);
+      // Muñeco Curandero - forma de muñeco
+      fill(r + lightIntensity * 75, g + lightIntensity * 75, b + lightIntensity * 75);
+      // Cabeza
+      ellipse(0, -20 * scaleRatio, 40 * scaleRatio, 40 * scaleRatio);
+      // Cuerpo
+      rect(-25 * scaleRatio, 0, 50 * scaleRatio, 60 * scaleRatio, 5);
+      // Brazos
+      rect(-40 * scaleRatio, 10 * scaleRatio, 15 * scaleRatio, 30 * scaleRatio, 3);
+      rect(25 * scaleRatio, 10 * scaleRatio, 15 * scaleRatio, 30 * scaleRatio, 3);
     }
     
     // Brillo si está activo
     if (lights[i].target === LIGHT_ACTIVE) {
       fill(255, 255, 200, lightIntensity * 100);
       noStroke();
-      ellipse(0, -20 * scaleRatio, 40 * scaleRatio, 40 * scaleRatio);
+      ellipse(0, -20 * scaleRatio, 50 * scaleRatio, 50 * scaleRatio);
     }
     
-    // Etiqueta del objeto
+    // Etiqueta del objeto (texto más grande)
     fill(220, 220, 220, 100 + lightIntensity * 155);
     noStroke();
     textAlign(CENTER, TOP);
-    textSize(11 * scaleRatio);
+    textSize(13 * scaleRatio);
     textStyle(BOLD);
-    text(obj.nombre, 0, 50 * scaleRatio);
+    text(obj.nombre, 0, 60 * scaleRatio);
     
-    textSize(9 * scaleRatio);
+    textSize(11 * scaleRatio);
     textStyle(NORMAL);
     fill(180, 180, 180, 80 + lightIntensity * 120);
-    text(obj.descripcion, 0, 65 * scaleRatio);
+    text(obj.descripcion, 0, 78 * scaleRatio);
     
     pop();
   }
