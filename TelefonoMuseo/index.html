@@ -8,13 +8,45 @@
   <!-- Favicon (emoji de teléfono) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📞</text></svg>">
   
+  <!-- Librerías p5.js -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/addons/p5.sound.min.js"></script>
+  
+  <!-- Estilos -->
   <link rel="stylesheet" href="style.css">
+  
+  <!-- ============================================ -->
+  <!-- MÓDULOS DEL PROYECTO (EN ORDEN DE DEPENDENCIAS) -->
+  <!-- ============================================ -->
+  
+  <!-- 1. Constantes (sin dependencias) -->
+  <script src="js/constants.js"></script>
+  
+  <!-- 2. Background (solo p5.js) -->
+  <script src="js/background.js"></script>
+  
+  <!-- 3. Audio (depende de constants.js) -->
+  <script src="js/audio.js"></script>
+  
+  <!-- 4. Estado (depende de constants.js, audio.js) -->
+  <script src="js/state.js"></script>
+  
+  <!-- 5. UI Teléfono (depende de constants.js, state.js, audio.js) -->
+  <script src="js/ui-telefono.js"></script>
+  
+  <!-- 6. UI Headset (depende de state.js, audio.js) -->
+  <script src="js/ui-headset.js"></script>
+  
+  <!-- 7. UI Components (depende de constants.js, state.js) -->
+  <script src="js/ui-components.js"></script>
+  
+  <!-- 8. Interactions (depende de todos los UI) -->
+  <script src="js/interactions.js"></script>
+  
+  <!-- 9. Main Sketch (coordinador principal - ÚLTIMO) -->
+  <script src="sketch.js"></script>
 </head>
 <body>
-  <main>
-    </main>
-  <script src="sketch.js"></script>
+  <main></main>
 </body>
 </html>
