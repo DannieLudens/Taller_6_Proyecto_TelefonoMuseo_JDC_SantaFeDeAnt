@@ -1,143 +1,291 @@
-# Museum Telephone Simulator - AI Coding Agent Instructions
+# 🏛️ Museo Juan del Corral - Interactive Exhibits
 
 ## Project Overview
-Interactive p5.js museum exhibit simulating a vintage 1980s-style cream telephone. Visitors pick up the handset, dial 4-digit numbers from a directory, and listen to audio narratives from 4 historical characters (5th pending). Built for Museo Juan del Corral in Santa Fe de Antioquia. Features immersive persona images with rounded masks and dynamic headset scaling.
+**Two independent p5.js museum exhibits** for Museo Juan del Corral (Santa Fe de Antioquia):
+- **📞 TelefonoMuseo**: Active exhibit - vintage phone to "call" 4 historical characters
+- **🏛️ VitrinaMuseo**: Passive exhibit - smart display case with 3 heritage objects
 
-## Architecture & Data Flow
+**Academic Context**: Taller 6 - Museum UX (Universidad Pontificia Bolivariana)
 
-### State Machine (STATES in sketch.js)
-The entire application is controlled by a state machine with **10 states** (expanded from 8):
-- `IDLE` → `DIAL_TONE` (lift handset + 500ms delay) → `DIALING` (entering digits) → `CALLING_RINGING` (ringing tone, NEW)
-- `CALLING_INTRO` (character intro audio) → `CALLING_OPCIONES` (menu options, plays 2x with 3s pause)
-- `WAITING_OPTION` (5s timeout for selection) → `CALLING_TEMA` (selected topic audio) → loops back to `CALLING_OPCIONES`
-- `ERROR` (invalid number, continuous loop, NO auto-hangup) / `BUSY` (call ended)
+## Architecture: Modular p5.js Pattern
 
-**Critical**: All state changes must go through `changeState()` function which logs transitions. Audio playback and UI behavior are tightly coupled to `currentState`.
+### Module Loading Order (Critical)
+Both projects use **dependency-ordered script loading** in `index.html`:
+```html
+<!-- TelefonoMuseo: 9 modules -->
+<script src="js/constants.js"></script>      <!-- 1. No deps -->
+<script src="js/background.js"></script>     <!-- 2. p5 only -->
+<script src="js/audio.js"></script>          <!-- 3. constants -->
+<script src="js/state.js"></script>          <!-- 4. constants, audio -->
+<script src="js/ui-telefono.js"></script>    <!-- 5. constants, state, audio -->
+<script src="js/ui-headset.js"></script>     <!-- 6. state, audio -->
+<script src="js/ui-components.js"></script>  <!-- 7. constants, state -->
+<script src="js/interactions.js"></script>   <!-- 8. all UI modules -->
+<script src="sketch.js"></script>            <!-- 9. Coordinator (preload/setup/draw) -->
 
-### Audio System Architecture
-- **DTMF Tones**: Generated via p5.Oscillator arrays (`dtmfOscs`) - dual-tone frequencies for keypad feedback
-- **System Sounds** (real MP3 files):
-  - `pickup_phone.mp3`: Played when handset lifted (500ms delay before dial tone)
-  - `hangup_phone.mp3`: Played when handset hung up
-  - `error_call_phone.mp3`: Continuous loop for ERROR state (no auto-hangup, user must hang up manually)
-- **Character Audio**: 4 characters fully implemented with real MP3 files:
-  - `Per_1_Intro_MujerAnonColonia.mp3`, `Per_1_Opciones_MujerAnonColonia.mp3`, `Per_1_Tema_1/2/3_MujerAnonColonia.mp3`
-  - `Per_2_*_CampesinoIndigenaDesplazado.mp3` (same structure)
-  - `Per_3_*_AfroColonial.mp3` (same structure)
-  - `Per_4_*_Sepulturero.mp3` (same structure)
-  - 5th character pending audio files
-- **Volume Control**: `masterVolume` (0-1) affects all audio sources. Must call `updateAllVolumes()` after changes.
+<!-- VitrinaMuseo: 8 modules + sketch_new.js -->
+```
 
-### UI Components
-1. **Wood Texture Background**: Pre-rendered canvas with grain effect (139, 90, 60 base color)
-2. **Directory Panel** (left, 8% x, 15% y): 4 active characters with name/profession/4-digit phone numbers
-3. **Telephone Base** (center, 50% x, 42% y - repositioned higher):
-   - Trapezoid shape with rounded corners (cream 245, 240, 220)
-   - Parallel shadow beneath (darker trapezoid at Y=300)
-   - LCD screen displaying `dialedNumber`
-   - 4x3 keypad grid with dark square buttons (50, 45, 40) and white text
-4. **Handset** (lateral view, 50° rotation when lifted):
-   - Two circular auriculares (85×100, 80×95) connected by 250-wide rectangular mango
-   - Decorative lines on mango
-   - **Dynamic Scaling**: Shrinks from 1.0 to 0.5 as it moves toward face (based on headsetX: 0→500)
-   - Movement range: X (-300 to 500), Y (-400 to 200) - expanded for persona images
-5. **Spiral Cable**: Bezier curve with sine wave perpendicular spiral effect
-   - Two-layer rendering (dark border + cream center)
-   - Rotation-aware anchor using trigonometry (cos/sin of headsetRotation)
-   - Connects headset left auricular to phone base rear
-6. **Horquilla/Soporte** (phone holder): Fixed-scale element with two vertical hooks and switch button
-7. **Persona Images** (3-layer rendering system):
-   - **Layer 1**: `persona_rostro.png` (80% x, 35% y) with **rounded rectangle mask** (30*scale corner radius) - NEW
-   - **Layer 2**: Telephone components
-   - **Layer 3**: `persona_mano.png` (same position as rostro)
-   - Images scaled at 0.6 * scale, rendered in CENTER mode
-8. **Ear Graphic**: Removed (replaced by persona images)
-9. **Volume Slider** (85% x, 75% y): Custom-drawn, values stored in `volumeSliderBounds`
-10. **Status Display** (bottom center): Shows state, instructions, and countdown timers
+**Rule**: Variables declared with `let`/`const` at module top-level are **global** across all scripts. No imports/exports - pure script concatenation model.
 
-## Critical Workflows
+### State Machine Architecture (Both Projects)
+**Central pattern**: All behavior controlled by `STATES` enum + `changeState()` function:
+```javascript
+// TelefonoMuseo: 10 states for phone call lifecycle
+const STATES = {
+  IDLE: 'idle',
+  DIAL_TONE: 'dial_tone',
+  DIALING: 'dialing',
+  CALLING_RINGING: 'calling_ringing',
+  CALLING_INTRO: 'calling_intro',
+  CALLING_OPCIONES: 'calling_opciones',  // Plays 2x
+  WAITING_OPTION: 'waiting_option',      // 5s timeout
+  CALLING_TEMA: 'calling_tema',
+  ERROR: 'error',  // NO auto-hangup (user must manually hang up)
+  BUSY: 'busy'
+};
 
-### Dialing Sequence
-1. User drags handset → `toggleHeadset()` → plays `pickup_phone.mp3` → 500ms delay → `changeState(DIAL_TONE)` → `playDialTone()`
-2. Keypad presses → `pressKey()` → appends to `dialedNumber` → plays DTMF via `playDTMFTone(col, row)`
-3. After 4 digits → 500ms delay → `checkNumber()` validates against `personajes[].telefono`
-4. Match: `changeState(CALLING_RINGING)` → plays ringing tone → transitions to intro
-5. `playIntroAudio()` → plays real MP3 intro → `.onended()` triggers `playOpcionesAudio()`
-6. `playOpcionesAudio()` plays twice with 3s pause between, then → `changeState(WAITING_OPTION)`
-7. No match: `changeState(ERROR)` → plays `error_call_phone.mp3` in continuous loop → NO auto-hangup, user must hang up manually
+// VitrinaMuseo: 5 states for sequential narratives
+const STATES = {
+  IDLE: 'idle',
+  DETECTING: 'detecting',               // 5s proximity timer
+  PLAYING_NARRATIVE: 'playing',         // Per-object audio
+  TRANSITIONING: 'transitioning',       // 2s pause between objects
+  COOLDOWN: 'cooldown'                  // 5s before reset
+};
+```
 
-### Option Selection (Key Pattern)
-- **Interruption Allowed**: Users can press 1/2/3 during `CALLING_OPCIONES` OR `WAITING_OPTION`
-- After 2nd options playback → 5s timeout in `WAITING_OPTION` → auto-hangup if no selection
-- Selection → `playTemaAudio(option)` → plays real MP3 tema → 3s pause → loops back to options (resets `opcionesPlayCount`)
-- **Only** buttons 1, 2, 3 are active during option selection (see `mousePressed()` conditionals)
+**Critical**: State changes logged via `changeState()` in `state.js`. Audio playback callbacks (`.onended()`) trigger subsequent state transitions.
 
-### Handset Lifecycle
-- **Lift**: `headsetLifted=true`, plays pickup sound, animates via `targetHeadsetX/Y`, enables keypad, shows persona images
-- **Drag**: `mouseDragged()` constrains to (-300→500, -400→200) scaled units, snaps to persona ear at <100px distance
-- **Dynamic Scaling**: As headset moves right (toward face), `dynamicScale` decreases from 1.0 to 0.5 based on `map(headsetX, 0, 500*scale, 1.0, 0.5)`
-- **Hang Up**: Drop near origin (<30px) → plays `hangup_phone.mp3` → `hangUp()` → resets all state variables
-- **Error State**: User MUST manually hang up (no auto-hangup), error tone loops until handset returned
+### Audio System (p5.sound.js)
+**Two audio sources**:
+1. **Synthesized tones** (`p5.Oscillator`) - TelefonoMuseo DTMF/dial tones
+   ```javascript
+   // Created in audio.js, stored in arrays
+   dtmfOscs[row][col] = new p5.Oscillator(dtmfFreqs[row][col]);
+   dialToneOsc = new p5.Oscillator(440);
+   ```
+2. **MP3 files** (`loadSound()` in `preload()`) - All narratives
+   ```javascript
+   // TelefonoMuseo: 5 audios per character (intro, opciones, tema1/2/3)
+   personajeAudios[1].intro = loadSound('assets/sounds/personajes/Per_1_Intro_MujerAnonColonia.mp3');
+   
+   // VitrinaMuseo: 1 narrative per object
+   objetos[0].narrativa = loadSound('assets/sounds/Camisa Indigena con ilustraciones de mapa.mp3');
+   ```
 
-## Project-Specific Conventions
+**Volume pattern**: `masterVolume` (0-1) multiplied across all sources. Call `updateAllVolumes()` after changes.
 
-### Coordinate System
-All drawing uses responsive scaling: `scale = min(width/1200, height/800)`. Positions are specified in "ideal" units (e.g., `150*scale`) rather than pixels. Always multiply hardcoded positions by `scale`.
+## TelefonoMuseo: Critical Workflows
 
-### Timer Management
-Timers increment per frame (~60fps = 16.67ms). Convert to seconds: `TIMEOUT / 16.67`. Two critical timers:
-- `autoHangupTimer`: Tracks ERROR/BUSY states (NOTE: ERROR state NO LONGER auto-hangs up, user must manually hang up)
-- `optionTimer`: Tracks WAITING_OPTION timeout (5000ms = 300 frames)
+### Phone Call Lifecycle
+```
+Lift handset → pickup_phone.mp3 (500ms) → DIAL_TONE
+↓
+Enter 4 digits (DTMF feedback) → DIALING → checkNumber()
+↓
+Valid: CALLING_RINGING → ringing tone (3s) → CALLING_INTRO
+Invalid: ERROR → error_call_phone.mp3 (loops forever, NO auto-hangup)
+↓
+Intro audio → .onended() → CALLING_OPCIONES (plays 2x with 3s pause)
+↓
+WAITING_OPTION (5s timeout) ← User presses 1/2/3 during opciones OR waiting
+↓
+CALLING_TEMA → tema audio → 3s pause → back to CALLING_OPCIONES (resets counter)
+```
 
-### Audio Placeholder Pattern
-**DEPRECATED**: Real audio is now fully integrated using MP3 files:
-- Character audios loaded in `preload()`: `personajeAudios[1-4].{intro, opciones, tema1, tema2, tema3}`
-- System sounds: `pickupSound`, `hangupSound`, `errorCallSound`
-- All audio uses `.onended()` callbacks for state transitions
-- No more setTimeout simulations
+### Handset Physics (ui-headset.js)
+- **Draggable**: `mouseDragged()` constrains to (-300→500, -400→200) in scaled units
+- **Dynamic scaling**: `map(headsetX, 0, 500*scale, 1.0, 0.5)` shrinks as it moves right
+- **Snap behavior**: <100px from persona ear → auto-position
+- **Hang up**: <30px from origin → `hangUp()` → reset all state
 
-### Touch vs Mouse
-All mouse events have mirror `touch*()` functions (lines 1082-1096) that call mouse handlers and `return false` to prevent default scrolling. Maintain this pattern for mobile compatibility.
+### Dual Phone Styles (ui-telefono.js)
+Toggle between `phoneStyle = 'buttons'` or `'rotary'`:
+- **Buttons**: 4×3 grid keypad, instant digit entry
+- **Rotary**: Draggable dial, digit on return (isReturning=true)
 
-## External Dependencies
-- **p5.js v1.11.10**: Core graphics/animation framework
-- **p5.sound.js v1.11.10**: Provides `p5.Oscillator` for DTMF tones and `.sound` file loading (when implemented)
-- Loaded from CDN in `index.html`, no build step required
+## VitrinaMuseo: Layout System
 
-## File Organization
-**Main Repository**: `Taller_6_ProyectoVoces/` contains two independent projects:
+### Three Interchangeable Layouts (ui-vitrina.js)
+```javascript
+const LAYOUTS = { INDIVIDUAL: 1, HORIZONTAL: 2, LEVELS: 3 };
 
-### TelefonoMuseo/ (Primary Project)
-- `sketch.js`: Entire application logic (~1400 lines, monolithic)
-- `index.html`: Minimal HTML shell, CDN script tags only
-- `style.css`: Basic resets (hide p5 default buttons, set background)
-- `assets/sounds/`: Real MP3 files
-  - `pickup_phone.mp3`, `hangup_phone.mp3`, `error_call_phone.mp3`
-  - `personajes/Per_{1-4}_{Intro,Opciones,Tema_1/2/3}_[PersonaName].mp3` (5th character pending)
-- `assets/images/`: Persona interaction images
-  - `persona_rostro.png`: Face image with rounded mask (80% x, 35% y)
-  - `persona_mano.png`: Hand overlay (same position as rostro)
+// Layout 1: 3 separate vitrines, individual detection per vitrine
+if (currentLayout === LAYOUTS.INDIVIDUAL) {
+  individualDetectionTimers[detectedVitrineIndex]++;
+  // Plays ONLY that vitrine's narrative
+}
 
-### VitrinaMuseo/ (Secondary Project)
-- Separate interactive display case system with automatic proximity detection
-- Similar p5.js structure but different interaction model (passive vs active)
+// Layouts 2-3: Unified vitrine, sequential playback all 3 objects
+else {
+  detectionTimer++;  // Global timer
+  // Plays object 0 → 1 → 2 in sequence
+}
+```
 
-## Running & Testing
-1. **Navigate to Project**: `cd TelefonoMuseo/` (for phone) or `cd VitrinaMuseo/` (for display case)
-2. **Local Server**: Use Live Server extension or `python -m http.server 8000` (required for audio loading)
-3. **Test Sequence (Phone)**: Lift handset → Dial `1234` → Wait for intro → Press 1/2/3 during options → Verify loop back
-4. **Test Sequence (Vitrina)**: Mouse over display case → Wait 5s → Observe automatic narrative sequence
-5. **Audio Context**: Click anywhere first to satisfy browser autoplay policies (`startAudioContext()`)
-6. **Console Logging**: All state changes and audio events log to console for debugging
+**LED Lighting** (ui-vitrina.js):
+- Idle: 25% intensity (`LIGHT_IDLE`)
+- Active: 65% intensity (`LIGHT_ACTIVE`)
+- Smooth lerp transitions: `lights[i].current = lerp(current, target, 0.1)`
 
-## Known Patterns to Preserve
-- **State-guarded input**: Keypad `canPress` logic (lines 444-452) differs by state - maintain these conditionals
-- **Lerp animations**: `headsetX/Y` and `earAlpha` use `lerp()` for smooth transitions - keep easing factor ~0.1-0.15
-- **Button highlighting**: Hovered buttons check both mouse distance AND `canPress` state - don't separate these checks
-- **Volume propagation**: Any new audio source must multiply by `masterVolume` and update in `updateAllVolumes()`
+**Bocinas (Speakers)**:
+- Layout 1: 3 individual speakers with LED per vitrine
+- Layouts 2-3: 1 shared speaker with pulsing LED during playback
+
+## Responsive Scaling Convention
+
+**Both projects** use ideal coordinate system:
+```javascript
+let scaleRatio = min(width / 1200, height / 800);
+// All positions multiplied by scaleRatio
+drawRect(150 * scaleRatio, 200 * scaleRatio, 100 * scaleRatio, 80 * scaleRatio);
+```
+
+**Never** hardcode pixel values - always scale by `scaleRatio`.
+
+## Timer Management Pattern
+
+**Frame-based timers** (60fps assumed):
+```javascript
+// Increment per frame in draw() loop
+detectionTimer++;
+
+// Convert to seconds for threshold checks
+if (detectionTimer > DETECTION_THRESHOLD / 16.67) { // 5000ms / 16.67 = 300 frames
+  changeState(STATES.PLAYING_NARRATIVE);
+}
+```
+
+**Critical timers**:
+- TelefonoMuseo: `autoHangupTimer`, `optionTimer`
+- VitrinaMuseo: `detectionTimer`, `individualDetectionTimers[]`
+
+## Touch Support Pattern
+
+**All mouse handlers mirrored**:
+```javascript
+function touchStarted() {
+  mousePressed();
+  return false; // Prevent default scroll
+}
+function touchMoved() {
+  mouseDragged();
+  return false;
+}
+```
+
+Maintain this for mobile compatibility.
+
+## Development Workflow
+
+### Local Server (Required)
+```powershell
+# Navigate to project
+cd TelefonoMuseo  # or VitrinaMuseo
+
+# Start server (audio loading requires HTTP)
+python -m http.server 8000
+# OR use Live Server extension
+
+# Open: http://localhost:8000
+```
+
+### Testing Checklist
+**TelefonoMuseo**:
+1. Click anywhere (audio context)
+2. Drag handset → verify pickup sound + dial tone
+3. Dial `1234` → verify ringing → intro
+4. Press 1/2/3 during opciones → verify tema playback → loop back
+5. Dial invalid → verify error loop (manual hangup required)
+6. Toggle phone style → test rotary dial
+
+**VitrinaMuseo**:
+1. Mouse over vitrina → verify 5s detection timer
+2. Verify sequential playback: Object 1 → 2 → 3
+3. Test layout switching (1/2/3 keys)
+4. Verify LED intensity changes
+5. Check bocina LED pulsing in layouts 2-3
+
+### Console Logging
+All state changes and audio events logged:
+```javascript
+console.log(`Estado: ${currentState} -> ${newState}`);
+console.log(`✓ Audio ${i+1} cargado: ${objetos[i].nombre}`);
+```
+
+## Asset Organization
+
+```
+TelefonoMuseo/
+├── assets/
+│   ├── images/
+│   │   ├── persona_rostro.png    # 80% x, 35% y, rounded mask
+│   │   └── persona_mano.png      # Same position, overlay
+│   └── sounds/
+│       ├── pickup_phone.mp3
+│       ├── hangup_phone.mp3
+│       ├── error_call_phone.mp3
+│       └── personajes/
+│           └── Per_{1-4}_{Intro,Opciones,Tema_1/2/3}_{PersonaName}.mp3
+
+VitrinaMuseo/
+├── assets/
+│   ├── images/
+│   │   ├── Obj_Camisa.png        # Preserved aspect ratio
+│   │   ├── Obj_Mascara.png
+│   │   └── Obj_Muneco.png
+│   └── sounds/
+│       ├── Camisa Indigena con ilustraciones de mapa.mp3
+│       ├── Mascara de los diablitos celebracion de diciembre.mp3
+│       └── Muñeco curandero de la cultura cuna para los enfermos.mp3
+```
 
 ## What NOT to Change
-- State machine constants in `STATES` object (referenced throughout codebase)
-- DTMF frequency arrays `dtmfFreqs` (standard telephone tones)
-- Personajes array structure (5 entries with `telefono` as 4-digit strings)
-- Timer thresholds (carefully tuned to museum visitor behavior expectations)
+
+1. **State machine constants** (`STATES` object) - referenced everywhere
+2. **Module loading order** in `index.html` - breaks dependencies
+3. **DTMF frequencies** (`dtmfFreqs`) - standard telephone tones
+4. **Timer thresholds** - tuned to museum visitor behavior
+5. **`personajes` array structure** - 4-digit `telefono` strings (TelefonoMuseo)
+6. **`objetos` array structure** - `nombre`, `narrativa`, `posX` (VitrinaMuseo)
+
+## Common Patterns to Preserve
+
+**Lerp animations**:
+```javascript
+headsetX = lerp(headsetX, targetHeadsetX, 0.15);  // Smooth easing
+earAlpha = lerp(earAlpha, targetAlpha, 0.08);     // Fade in/out
+```
+
+**State-guarded input**:
+```javascript
+let canPress = (currentState === STATES.DIALING || 
+                currentState === STATES.CALLING_OPCIONES || 
+                currentState === STATES.WAITING_OPTION);
+if (canPress && dist(mouseX, mouseY, btnX, btnY) < buttonSize/2) {
+  pressKey(key);
+}
+```
+
+**Volume propagation**:
+```javascript
+function updateAllVolumes() {
+  if (pickupSound) pickupSound.setVolume(masterVolume);
+  if (currentAudio) currentAudio.setVolume(masterVolume);
+  // Update ALL audio sources
+}
+```
+
+## Known Issues / Future Work
+
+- **5th character** in TelefonoMuseo pending audio files
+- **Mobile responsive** needs improvement (touch drag precision)
+- **Arduino integration** for VitrinaMuseo proximity sensor (currently mouse-simulated)
+
+## Documentation References
+
+- **TelefonoMuseo/README.md**: Complete feature list, architecture diagrams
+- **VitrinaMuseo/docs/**: Version history (v2.0 → v2.5)
+  - `REFACTORIZACION_V2.md`: Modularization details
+  - `MEJORAS_BOCINAS_VITRINAS_v2.5.md`: Latest layout changes
